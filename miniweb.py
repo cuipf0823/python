@@ -6,21 +6,30 @@ from flask import make_response
 from flask import render_template
 from flask_bootstrap import Bootstrap
 from flask_moment import Moment
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
-from wtforms.validators import Required
+from wtforms.validators import DataRequired
+from flask_script import Manager
+from flask import session
+from flask import redirect
+from flask import url_for
+from flask import flash
 import datetime
 
 app=Flask(__name__)
+# app.config 字典可以用来存储框架、扩展和程序本身的配置变量
+# SECRET_KEY 配置变量是通用密钥
+app.config['SECRET_KEY'] = 'gress string'
+manager = Manager(app)
 bootstrap = Bootstrap(app)
 moment = Moment(app)
-app['SECRET_KEY'] = 'gress string'
 
-
+'''
 # index 试图函数
 @app.route('/')
 def index():
     return "<h1>Hello World!</h1>"
+'''
 
 
 # 接受动态参数
@@ -68,11 +77,45 @@ def internal_server_error(e):
 
 
 # 表单类提交
-class NameForm(From):
+class NameForm(FlaskForm):
     # 文本字段
-    name = StringField('Username:', validators=[Required()])
+    name = StringField('What is your name:', validators=[DataRequired()])
     # 名字为Entry的提交按钮
     submit = SubmitField('Entry')
+
+
+# web 表单
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    name = None
+    form = NameForm()
+    if form.validate_on_submit():
+        name = form.name.data
+        form.name.data = ''
+    return render_template('index.html', form=form, name=name)
+
+
+# web 表单重定向
+@app.route('/re', methods=['GET', 'POST'])
+def index_re():
+    form = NameForm()
+    if form.validate_on_submit():
+        session['name'] = form.name.data
+        return redirect(url_for('index_re'))
+    return render_template('index.html', form=form, name=session.get('name'))
+
+
+# flash 消息
+@app.route('/flash', methods=['GET', 'POST'])
+def index_flash():
+    form = NameForm()
+    if form.validate_on_submit():
+        old_name = session.get('name')
+        if old_name is not None and old_name != form.name.data:
+            flash('looks like you changed your name!')
+        session['name'] = form.name.data
+        return redirect(url_for('index_flash'))
+    return render_template('index.html', form=form, name=session.get('name'))
 
 
 if __name__ == '__main__':
