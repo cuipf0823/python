@@ -14,6 +14,8 @@ from flask import session
 from flask import redirect
 from flask import url_for
 from flask import flash
+# from flask_mysqldb import MySQL
+import MySQLdb
 import datetime
 
 app=Flask(__name__)
@@ -24,6 +26,7 @@ manager = Manager(app)
 bootstrap = Bootstrap(app)
 moment = Moment(app)
 
+dbcon = MySQLdb.connect('10.1.1.119', 'ru', '123456', 'ru_30007')
 '''
 # index 试图函数
 @app.route('/')
@@ -116,6 +119,36 @@ def index_flash():
         session['name'] = form.name.data
         return redirect(url_for('index_flash'))
     return render_template('index.html', form=form, name=session.get('name'))
+
+
+# 数据库中检测名字是否存在
+def check_name(name):
+    cursor = dbcon.cursor()
+    sqlstr = "SELECT * FROM %s WHERE NICK = '%s'" % ('t_ru_base', name)
+    print(sqlstr)
+    cursor.execute(sqlstr)
+    ret = cursor.fetchall()
+    dbcon.commit()
+    cursor.close()
+    return ret
+
+
+# 检测输入用户是否在数据库中
+@app.route('/sql', methods=['GET', 'POST'])
+def index_sql():
+    form = NameForm()
+    if form.validate_on_submit():
+        old_name = session.get('name')
+        if old_name is not None and old_name != form.name.data:
+            flash('looks like you changed your name!')
+        session['name'] = form.name.data
+        if len(check_name(form.name.data)) == 0:
+            session['exist'] = False
+            flash('you name not in sql')
+        else:
+            session['exist'] = True
+        return redirect(url_for('index_sql'))
+    return render_template('index.html', form=form, name=session.get('name'), exist=session.get('exist'))
 
 
 if __name__ == '__main__':
