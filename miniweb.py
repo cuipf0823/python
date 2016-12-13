@@ -14,9 +14,13 @@ from flask import session
 from flask import redirect
 from flask import url_for
 from flask import flash
-# from flask_mysqldb import MySQL
 import MySQLdb
 import datetime
+import os
+from flask_mail import Mail
+from flask_mail import Message
+from threading import Thread
+
 
 app=Flask(__name__)
 # app.config 字典可以用来存储框架、扩展和程序本身的配置变量
@@ -150,6 +154,40 @@ def index_sql():
         return redirect(url_for('index_sql'))
     return render_template('index.html', form=form, name=session.get('name'), exist=session.get('exist'))
 
+
+# 电子邮件
+app.config['MAIL_SERVER'] = 'smtp.163.com'  # 电子邮件服务器的主机名或IP地址
+app.config['MAIL_PORT'] = '25'  # 电子邮件服务器的端口
+app.config['MAIL_USE_TLS'] = True  # 启用传输层安全
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')  # 邮件账户用户名
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PWD')  # 邮件账户的密码
+mail = Mail(app)
+
+
+def send_sync_mail(app, msg):
+    with app.app_context():
+        mail.send(msg)
+
+
+# 发送邮件
+@app.route('/mail')
+def send_mail():
+    msg = Message('test', sender=os.environ.get('MAIL_USERNAME'), recipients=['test@test.com'])
+    msg.body = 'test body'
+    msg.html = '<b>hello</b> body'
+    mail.send(msg)
+    return '<h1> send mail successful !</h1>'
+
+
+# 异步发送邮件
+@app.route('/sync_mail')
+def sync_mail():
+    msg = Message('test', sender=os.environ.get('MAIL_USERNAME'), recipients=['test@test.com'])
+    msg.body = 'test body'
+    msg.html = '<b>hello</b> body'
+    thread = Thread(target=send_sync_mail, args=[app, msg])
+    thread.start()
+    return '<h1> send sync mail successful !</h1>'
 
 if __name__ == '__main__':
     app.run(debug=True)
