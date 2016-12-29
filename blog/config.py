@@ -27,7 +27,7 @@ class DevelopmentConfig(Config):
     DB_IP = os.environ.get('DB_DEV_IP') or '10.1.1.119'
     DB_USERNAME = os.environ.get('DB_DEV_USERNAME') or 'ru'
     DB_PWD = os.environ.get('DB_DEV_PWD') or '123456'
-    DB_NAME = os.environ.get('DB_DEV_NAME') or 'ru_30007'
+    DB_NAME = os.environ.get('DB_DEV_NAME') or 'ru_1001'
 
 
 class TestConfig(Config):

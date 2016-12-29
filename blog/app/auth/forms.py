@@ -12,7 +12,7 @@ from wtforms.validators import Email
 
 
 class LoginForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired, Length(1, 128), Email()])
-    password = PasswordField('Password', validators=[DataRequired])
+    email = StringField('Email', validators=[DataRequired(), Length(1, 128), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
     rem_me = BooleanField('Keep me logged in')
     submit = SubmitField('Log In')

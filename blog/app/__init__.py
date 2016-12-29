@@ -16,6 +16,7 @@ bootstrap = Bootstrap()
 mail = Mail()
 moment = Moment()
 db = None
+
 login_manager = LoginManager()
 # 防止会话被篡改，设置为strong，会记录客户端的IP和浏览器的用户代理信息
 login_manager.session_protection = 'strong'
@@ -38,9 +39,10 @@ def create_app(config_name):
     login_manager.init_app(app)
 
     # 注册蓝图
-    from main import blue
+    from .main import main as main_blueprint
+    app.register_blueprint(main_blueprint)
+
     from auth import auth as auth_blueprint
-    app.register_blueprint(blue)
     # url_prefix为可选参数，如果设置，注册后的蓝本中定义的所有路由都会加上指定的前缀
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
     return app
