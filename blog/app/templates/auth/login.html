@@ -10,6 +10,13 @@
     </div>
     <div class="col-lg-4">
         {{ wtf.quick_form(form) }}
+        <br/>
+        <p>
+            new user?
+            <a href="{{ url_for('auth.register') }}">
+                click here to register
+            </a>
+        </p>
     </div>
 {% endblock %}
 
