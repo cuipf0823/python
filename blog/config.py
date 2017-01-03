@@ -5,7 +5,7 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
-class Config():
+class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'guess string'
     MAIL_SERVER = 'smtp.163.com'  # 电子邮件服务器的主机名或IP地址
     MAIL_PORT = '25'  # 电子邮件服务器的端口

@@ -4,34 +4,24 @@
 from werkzeug.security import generate_password_hash
 from werkzeug.security import check_password_hash
 from flask_login import UserMixin
-from . import db
 from . import login_manager
-
-'''
-# 数据库中检测名字是否存在
-def check_name(name):
-    cursor = db.cursor()
-    sqlstr = "SELECT * FROM %s WHERE NICK = '%s'" % ('t_ru_base', name)
-    # print(sqlstr)
-    cursor.execute(sqlstr)
-    ret = cursor.fetchall()
-    db.commit()
-    cursor.close()
-    return ret
-'''
+from .dbproxy import DBUserProxy
+db = DBUserProxy()
 
 
-class DBUserProxy:
-    def __init__(self, connect):
-        self.__con = connect
-        self.__table_name = 'blog_users'
+# 判断email是否注册过
+def is_register(email):
+    return db.is_register(email)
 
-    # 获取玩家
-    def get_user(self, email):
-        cursor = self.__con.cursor()
-        sqlstr = "SELECT id, user_name, pwd_hash, role_id FROM %s WHERE email = '%s' " % (self.__table_name, email)
-        cursor.execute(sqlstr)
-        return cursor.fetchone()
+
+# 判断用户名是否注册过
+def is_user_register(username):
+    return db.is_user_register(username)
+
+
+# 添加用户
+def add_user(username, pwd, email):
+    return db.add_user(username, pwd, email)
 
 
 class User(UserMixin):
@@ -41,7 +31,7 @@ class User(UserMixin):
         self._pwd_hash = None
         self._email = None
         self._role_id = 0
-        self._db_user = DBUserProxy(db)
+        self._db_user = db
 
     def get_user(self, email):
         user_info = self._db_user.get_user(email)

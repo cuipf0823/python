@@ -9,10 +9,10 @@ from flask import flash
 from flask_login import login_user
 from flask_login import logout_user
 from flask_login import login_required
-
 from . import auth
-from ..models import User
+from ..models import User, add_user
 from .forms import LoginForm
+from .forms import RegistrationForm
 
 
 @auth.route('/login', methods=['GET', 'POST'])
@@ -37,7 +37,12 @@ def logout():
 
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
-    pass
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        flash('You can login now.')
+        add_user(form.username.data, form.password.data, form.email.data)
+        return redirect(url_for('auth.login'))
+    return render_template('auth/register.html', form=form)
 
 
 
