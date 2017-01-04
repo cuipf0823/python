@@ -64,3 +64,6 @@ class DBUserProxy:
         self.__con.commit()
         cur.close()
 
+    def confirm_user(self, userid):
+        passs
+

@@ -9,10 +9,12 @@ from flask import flash
 from flask_login import login_user
 from flask_login import logout_user
 from flask_login import login_required
+from flask_login import current_user
 from . import auth
 from ..models import User, add_user
 from .forms import LoginForm
 from .forms import RegistrationForm
+from ..email import send_mail
 
 
 @auth.route('/login', methods=['GET', 'POST'])
@@ -39,10 +41,57 @@ def logout():
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
-        flash('You can login now.')
         add_user(form.username.data, form.password.data, form.email.data)
+        user = User()
+        ret = user.get_user(form.email.data)
+        if ret:
+            token = user.generate_confirm_token()
+            send_mail(form.email.data, 'Confirm Your Account', 'auth/email/confirm', user=user, token=token)
+            flash('A confirmation email has been sent to you by email.')
         return redirect(url_for('auth.login'))
     return render_template('auth/register.html', form=form)
+
+
+@auth.route('/confirm/<token>')
+@login_required
+def confirm(token):
+    if current_user.confirmed:
+        return redirect(url_for('main.index'))
+    if current_user.confirm(token):
+        flash('You have confirmed your account, Thanks')
+    else:
+        flash('The confirmation link is invalid or has expired.')
+    return redirect(url_for('main.index'))
+
+
+# 程序可以决定用户确认账户之前可以做什么操作，允许未确认账户登录，但是只显示一个页面，要求用户在获取权限之前先确认账户
+# 使用before_request 钩子完成 before_request钩子只能应用于属于蓝本的请求上；
+# 全局钩子，必须使用before_app_request修饰器
+
+@auth.before_app_request
+def before_request():
+    if current_user.is_authenticated \
+            and not current_user.confirmed \
+            and request.endpoint[:5] != 'auth.' \
+            and request.endpoint != 'static':
+        return redirect(url_for('auth.unconfirmed'))
+
+
+@auth.route('/unconfirmed')
+def unconfirmed():
+    if current_user.is_anonymous() or current_user.confirmed:
+        return redirect(url_for('main.index'))
+    return render_template('auth/unconfirmed.html')
+
+
+@auth.route('/confirm')
+@login_required
+def resend_confirmation():
+    token = current_user.generate_confirmation_token()
+    send_email(current_user.email, 'Confirm Your Account',
+               'auth/email/confirm', user=current_user, token=token)
+    flash('A new confirmation email has been sent to you by email.')
+    return redirect(url_for('main.index'))
 
 
 

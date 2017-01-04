@@ -3,6 +3,8 @@
 
 from werkzeug.security import generate_password_hash
 from werkzeug.security import check_password_hash
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from flask import current_app
 from flask_login import UserMixin
 from . import login_manager
 from .dbproxy import DBUserProxy
@@ -24,6 +26,13 @@ def add_user(username, pwd, email):
     return db.add_user(username, pwd, email)
 
 
+# 添加用户管理类
+class ManageUser:
+
+    def __init__(self):
+        pass
+
+
 class User(UserMixin):
     def __init__(self):
         self.id = 0
@@ -32,6 +41,7 @@ class User(UserMixin):
         self._email = None
         self._role_id = 0
         self._db_user = db
+        self.confirmed = False
 
     def get_user(self, email):
         user_info = self._db_user.get_user(email)
@@ -55,6 +65,23 @@ class User(UserMixin):
 
     def verify_password(self, pwd):
         return check_password_hash(self._pwd_hash, pwd)
+
+    # 产生用户确认令牌
+    def generate_confirm_token(self, expiration = 3600):
+        s = Serializer(current_app.config['SECRET_KEY'], expiration)
+        return s.dumps({'confirm': self.id})
+
+    def confirm(self, token):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.load(token)
+        except e:
+            return False
+        if data.get('confirm') != self.id:
+            return False
+        self.confirmed = True
+        self._db_user.confirm_user(self.id)
+        return True
 
 
 # 回调函数，根据用户ID查找用户
