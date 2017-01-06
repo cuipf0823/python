@@ -5,20 +5,6 @@ from werkzeug.security import generate_password_hash
 from . import db
 
 
-'''
-# 数据库中检测名字是否存在
-def check_name(name):
-    cursor = db.cursor()
-    sqlstr = "SELECT * FROM %s WHERE NICK = '%s'" % ('t_ru_base', name)
-    # print(sqlstr)
-    cursor.execute(sqlstr)
-    ret = cursor.fetchall()
-    db.commit()
-    cursor.close()
-    return ret
-'''
-
-
 class DBUserProxy:
 
     def __init__(self):
@@ -29,8 +15,10 @@ class DBUserProxy:
     def __del__(self):
         pass
 
-    # 获取玩家
     def get_user(self, email):
+        """
+        获取玩家根据email
+        """
         cursor = self.__con.cursor()
         sqlstr = "SELECT id, user_name, pwd_hash, role_id FROM %s WHERE email = '%s' " % (self.__table_name, email)
         cursor.execute(sqlstr)
@@ -38,8 +26,18 @@ class DBUserProxy:
         cursor.close()
         return ret
 
-    # 邮件地址是否注册过
+    def get_user_by_id(self, user_id):
+        cursor = self.__con.cursor()
+        sqlstr = "SELECT user_name, pwd_hash, email, role_id FROM %s WHERE id = %d " % (self.__table_name, user_id)
+        cursor.execute(sqlstr)
+        ret = cursor.fetchone()
+        cursor.close()
+        return ret
+
     def is_register(self, email):
+        """
+        判断邮件地址是否注册过
+        """
         cur = self.__con.cursor()
         sqlstr = "SELECT * FROM %s WHERE email = '%s' " % (self.__table_name, email)
         cur.execute(sqlstr)
@@ -47,8 +45,10 @@ class DBUserProxy:
         cur.close()
         return len(ret)
 
-    # 用户名字是否注册过
     def is_user_register(self, username):
+        """
+        判断用户名字是否注册过
+        """
         cur = self.__con.cursor()
         sqlstr = "SELECT * FROM %s WHERE user_name = '%s' " % (self.__table_name, username)
         cur.execute(sqlstr)
@@ -57,13 +57,20 @@ class DBUserProxy:
         return len(ret)
 
     def add_user(self, username, pwd, email):
+        """
+        添加新用户 返回用户ID值
+        """
         cur = self.__con.cursor()
         sqlstr = "INSERT into %s (user_name, pwd_hash, email, role_id, reg_time) VALUES " \
                  "('%s', '%s', '%s', %u, NOW())" % (self.__table_name, username, generate_password_hash(pwd), email, 0)
-        cur.execute(sqlstr)
+        ret = cur.execute(sqlstr)
         self.__con.commit()
+        if ret != 1:
+            return 0
+        sqlstr = "select last_insert_id() FROM %s" % self.__table_name
+        cur.execute(sqlstr)
+        ret = cur.fetchall()[0]
         cur.close()
+        return ret
 
-    def confirm_user(self, userid):
-        passs
 

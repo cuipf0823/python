@@ -11,8 +11,7 @@ from wtforms.validators import DataRequired
 from wtforms.validators import Length
 from wtforms.validators import Email
 from wtforms.validators import Regexp, EqualTo
-
-from ..models import is_user_register, is_register
+from ..models import UsersManager
 
 
 class LoginForm(FlaskForm):
@@ -35,13 +34,11 @@ class RegistrationForm(FlaskForm):
 
     # 表单函数中定义了validate_开头的函数并且后面紧跟字段名的方法，这些方法
     # 会和常规的验证函数一起调用
-    @staticmethod
     def validate_email(self, field):
-        if is_register(field.data):
+        if UsersManager.is_email_register(field.data):
             raise ValidationError('Email already registered.')
 
-    @staticmethod
     def validate_username(self, field):
-        if is_user_register(field.data):
+        if UsersManager.is_user_register(field.data):
             raise ValidationError('Username already registered.')
 

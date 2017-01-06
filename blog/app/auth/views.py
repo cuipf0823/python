@@ -11,7 +11,7 @@ from flask_login import logout_user
 from flask_login import login_required
 from flask_login import current_user
 from . import auth
-from ..models import User, add_user
+from ..models import UsersManager
 from .forms import LoginForm
 from .forms import RegistrationForm
 from ..email import send_mail
@@ -21,9 +21,8 @@ from ..email import send_mail
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        user = User()
-        ret = user.get_user(form.email.data)
-        if ret and user.verify_password(form.password.data):
+        user = UsersManager.init_user(form.email.data)
+        if user is not None and user.verify_password(form.password.data):
             login_user(user, form.rem_me.data)
             return redirect(request.args.get('next') or url_for('main.index'))
         flash('Invalid username or password!')
@@ -41,11 +40,9 @@ def logout():
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
-        add_user(form.username.data, form.password.data, form.email.data)
-        user = User()
-        ret = user.get_user(form.email.data)
-        if ret:
-            token = user.generate_confirm_token()
+        user = UsersManager.add_user(form.username.data, form.password.data, form.email.data)
+        if user is not None:
+            token = user.generate_confirmation_token()
             send_mail(form.email.data, 'Confirm Your Account', 'auth/email/confirm', user=user, token=token)
             flash('A confirmation email has been sent to you by email.')
         return redirect(url_for('auth.login'))
@@ -79,7 +76,7 @@ def before_request():
 
 @auth.route('/unconfirmed')
 def unconfirmed():
-    if current_user.is_anonymous() or current_user.confirmed:
+    if current_user.is_anonymous or current_user.confirmed:
         return redirect(url_for('main.index'))
     return render_template('auth/unconfirmed.html')
 
@@ -88,8 +85,8 @@ def unconfirmed():
 @login_required
 def resend_confirmation():
     token = current_user.generate_confirmation_token()
-    send_email(current_user.email, 'Confirm Your Account',
-               'auth/email/confirm', user=current_user, token=token)
+    print token
+    send_mail(current_user.email, 'Confirm Your Account', 'auth/email/confirm', user=current_user, token=token)
     flash('A new confirmation email has been sent to you by email.')
     return redirect(url_for('main.index'))
 
