@@ -42,3 +42,10 @@ class RegistrationForm(FlaskForm):
         if UsersManager.is_user_register(field.data):
             raise ValidationError('Username already registered.')
 
+
+class ChangePwdForm(FlaskForm):
+    old_pwd = PasswordField('Old password', validators=[DataRequired()])
+    pwd = PasswordField('New password', validators=[DataRequired(), EqualTo('pwd2', message='Passwords must match')])
+    pwd2 = PasswordField('Confirm new password', validators=[DataRequired()])
+    submit = SubmitField('Update Password')
+

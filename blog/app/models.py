@@ -101,6 +101,7 @@ class ManageUser:
 
     def init_user(self, email):
         user_info = self.__db.get_user(email)
+        print user_info
         if len(user_info) == 0:
             return None
         user = User()
@@ -136,6 +137,9 @@ class ManageUser:
 
     def is_user_register(self, username):
         return self.__db.is_user_register(username)
+
+    def update_pwd(self, user_id, pwd):
+        pass
 
 
 UsersManager = ManageUser()

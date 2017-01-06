@@ -14,6 +14,7 @@ from . import auth
 from ..models import UsersManager
 from .forms import LoginForm
 from .forms import RegistrationForm
+from .forms import ChangePwdForm
 from ..email import send_mail
 
 
@@ -85,10 +86,24 @@ def unconfirmed():
 @login_required
 def resend_confirmation():
     token = current_user.generate_confirmation_token()
-    print token
     send_mail(current_user.email, 'Confirm Your Account', 'auth/email/confirm', user=current_user, token=token)
     flash('A new confirmation email has been sent to you by email.')
     return redirect(url_for('main.index'))
+
+
+@auth.route('/change-password', methods=['GET', 'POST'])
+@login_required
+def change_pwd():
+    form = ChangePwdForm()
+    if form.validate_on_submit():
+        if current_user.verify_password(form.old_pwd.data):
+            current_user.password_hash = form.pwd.data
+            UsersManager.update_pwd(current_user.id, current_user.password_hash)
+            flash('You password has been updated.')
+            return redirect(url_for('main.index'))
+        else:
+            flash('Invalid password')
+    return render_template('auth/change_password.html', form=form)
 
 
 
