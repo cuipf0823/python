@@ -99,7 +99,7 @@ class ManageUser:
         self.__users = OrderedDict()
         self.__db = DBUserProxy()
 
-    def init_user(self, email):
+    def get_user(self, email):
         user_info = self.__db.get_user(email)
         print user_info
         if len(user_info) == 0:

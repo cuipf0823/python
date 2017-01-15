@@ -49,3 +49,19 @@ class ChangePwdForm(FlaskForm):
     pwd2 = PasswordField('Confirm new password', validators=[DataRequired()])
     submit = SubmitField('Update Password')
 
+
+class PasswordResetForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Length(1, 128), Email()])
+    pwd = PasswordField('New password', validators=[DataRequired(), EqualTo('pwd2', message='Passwords must match')])
+    pwd2 = PasswordField('Confirm new password', validators=[DataRequired()])
+    submit = SubmitField('Reset Password')
+
+    def validate_email(self, field):
+        if not UsersManager.is_email_register(field.data):
+            raise ValidationError('Unknown email address')
+
+
+
+
+
+
