@@ -29,6 +29,10 @@ class User(UserMixin):
         s = Serializer(current_app.config['SECRET_KEY'], expiration)
         return s.dumps({'confirm': self._id})
 
+    def generate_reset_token(self, expiration=3600):
+        s = Serializer(current_app.config['SECRET_KEY'], expiration)
+        return s.dumps({'reset': self._id})
+
     def confirm(self, token):
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
@@ -40,6 +44,18 @@ class User(UserMixin):
             return False
         self._confirmed = True
         # 数据库中设置邮箱验证
+        return True
+
+    def reset_pwd(self, token, new_pwd):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except Exception as e:
+            print e
+            return False
+        if data.get('reset') != self._id:
+            return False
+        self._password_hash = new_pwd
         return True
 
     @property
@@ -121,7 +137,7 @@ class ManageUser:
         return None
 
     def add_user(self, username, pwd, email):
-        user_id = self.__db.add_user(username, pwd, email)
+        user_id = self.__db.add_user(username, generate_password_hash(pwd), email)
         if user_id != 0:
             user = User()
             user.id = user_id
@@ -138,8 +154,18 @@ class ManageUser:
     def is_user_register(self, username):
         return self.__db.is_user_register(username)
 
+    def change_pwd(self, user_id, pwd):
+        """
+        用户一定是上线的
+        """
+        user = self.__users[user_id]
+        if user is not None and not user.verify_password(pwd):
+            return self.update_pwd(user_id, pwd)
+        else:
+            return False
+
     def update_pwd(self, user_id, pwd):
-        pass
+        return self.__db.update_pwd(self, user_id, generate_password_hash(pwd))
 
 
 UsersManager = ManageUser()

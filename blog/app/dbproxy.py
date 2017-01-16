@@ -1,7 +1,5 @@
 # !/usr/bin/python
 # coding=utf-8
-
-from werkzeug.security import generate_password_hash
 from . import db
 
 
@@ -58,11 +56,11 @@ class DBUserProxy:
 
     def add_user(self, username, pwd, email):
         """
-        添加新用户 返回用户ID值
+        添加新用户  传递hash 之后的pwd 返回用户ID值
         """
         cur = self.__con.cursor()
         sqlstr = "INSERT into %s (user_name, pwd_hash, email, role_id, reg_time) VALUES " \
-                 "('%s', '%s', '%s', %u, NOW())" % (self.__table_name, username, generate_password_hash(pwd), email, 0)
+                 "('%s', '%s', '%s', %u, NOW())" % (self.__table_name, username, pwd, email, 0)
         ret = cur.execute(sqlstr)
         self.__con.commit()
         if ret != 1:
@@ -72,5 +70,17 @@ class DBUserProxy:
         ret = cur.fetchall()[0]
         cur.close()
         return ret
+
+    def update_pwd(self, user_id, pwd):
+        """
+         修改用户的pwd 传递是hash之后的pwd
+        """
+        cur = self.__con.cursor()
+        sqlstr = "UPDATE %s SET pwd_hash = %s WHERE id = %d" % (self.__table_name, pwd, user_id)
+        ret = cur.execute(sqlstr)
+        cur.commit()
+        cur.close()
+        return ret
+
 
 

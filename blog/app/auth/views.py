@@ -16,6 +16,7 @@ from .forms import LoginForm
 from .forms import RegistrationForm
 from .forms import ChangePwdForm
 from .forms import PasswordResetForm
+from .forms import PasswordResetRequestForm
 from ..email import send_mail
 
 
@@ -99,7 +100,7 @@ def change_pwd():
     if form.validate_on_submit():
         if current_user.verify_password(form.old_pwd.data):
             current_user.password_hash = form.pwd.data
-            UsersManager.update_pwd(current_user.id, current_user.password_hash)
+            UsersManager.change_pwd(current_user.id, current_user.password_hash)
             flash('You password has been updated.')
             return redirect(url_for('main.index'))
         else:
@@ -111,11 +112,11 @@ def change_pwd():
 def password_reset_request():
     if not current_user.is_anonymous:
         return redirect(url_for('main.index'))
-    form = PasswordResetForm()
+    form = PasswordResetRequestForm()
     if form.validate_on_submit():
         user = UsersManager.get_user(form.email.data)
         if user:
-            token = user.generate_confirmation_token()
+            token = user.generate_reset_token()
             send_mail(user.email, 'Reset Your Password', 'auth/email/reset_password',
                       user=user, token=token, next=request.args.get('next'))
         flash('An email with instructions to reset your password has been sent to you')
@@ -132,7 +133,7 @@ def password_reset(token):
         user = UsersManager.get_user(form.email.data)
         if user is None:
             return redirect(url_for('main.index'))
-        
+
 
 
 

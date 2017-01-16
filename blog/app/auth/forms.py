@@ -50,6 +50,11 @@ class ChangePwdForm(FlaskForm):
     submit = SubmitField('Update Password')
 
 
+class PasswordResetRequestForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Length(1, 128), Email()])
+    submit = SubmitField('Reset Password')
+
+
 class PasswordResetForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Length(1, 128), Email()])
     pwd = PasswordField('New password', validators=[DataRequired(), EqualTo('pwd2', message='Passwords must match')])
