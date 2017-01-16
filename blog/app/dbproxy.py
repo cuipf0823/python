@@ -76,9 +76,8 @@ class DBUserProxy:
          修改用户的pwd 传递是hash之后的pwd
         """
         cur = self.__con.cursor()
-        sqlstr = "UPDATE %s SET pwd_hash = %s WHERE id = %d" % (self.__table_name, pwd, user_id)
+        sqlstr = "UPDATE %s SET pwd_hash = '%s' WHERE id = %d" % (self.__table_name, pwd, user_id)
         ret = cur.execute(sqlstr)
-        cur.commit()
         cur.close()
         return ret
 

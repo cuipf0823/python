@@ -118,7 +118,7 @@ class ManageUser:
     def get_user(self, email):
         user_info = self.__db.get_user(email)
         print user_info
-        if len(user_info) == 0:
+        if user_info is None:
             return None
         user = User()
         user.id = user_info[0]
@@ -165,7 +165,10 @@ class ManageUser:
             return False
 
     def update_pwd(self, user_id, pwd):
-        return self.__db.update_pwd(self, user_id, generate_password_hash(pwd))
+        return self.__db.update_pwd(user_id, generate_password_hash(pwd))
+
+    def reset_pwd(self, user_id, new_pwd):
+        return self.update_pwd(user_id, new_pwd)
 
 
 UsersManager = ManageUser()

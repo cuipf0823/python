@@ -133,7 +133,13 @@ def password_reset(token):
         user = UsersManager.get_user(form.email.data)
         if user is None:
             return redirect(url_for('main.index'))
-
+        if user.reset_pwd(token, form.pwd.data):
+            UsersManager.reset_pwd(user.id, form.pwd.data)
+            flash('Your password has been updated')
+            return redirect(url_for('auth.login'))
+        else:
+            return redirect(url_for('main.index'))
+    return render_template('auth/reset_password.html', form=form)
 
 
 
