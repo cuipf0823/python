@@ -10,6 +10,17 @@ from . import login_manager
 from .dbproxy import DBUserProxy
 
 
+class Permission:
+    FOLLOW = 0x01
+    COMMENT = 0x02
+    WRITE_ARTICLES = 0x04
+    MANAGER_COMMENTS = 0x08
+    ADMINISTER = 0x80
+
+    def __init__(self):
+        pass
+
+
 class User(UserMixin):
     def __init__(self):
         self._id = 0
@@ -57,6 +68,9 @@ class User(UserMixin):
             return False
         self._password_hash = new_pwd
         return True
+
+    def can(self, permissions):
+        return
 
     @property
     def confirmed(self):
