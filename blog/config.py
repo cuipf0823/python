@@ -16,6 +16,7 @@ class Config:
     MAIL_PASSWORD = os.environ.get('MAIL_PWD')  # 邮件账户的密码
     MAIL_SUBJECT_PREFIX = os.environ.get('MAIL_SUBJECT_PREFIX')
     MAIL_SENDER = os.environ.get('MAIL_SENDER')
+    MAIL_ADMIN = os.environ.get('MAIL_ADMIN')
 
     def __init__(self):
         pass

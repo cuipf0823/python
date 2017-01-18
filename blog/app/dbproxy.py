@@ -54,13 +54,13 @@ class DBUserProxy:
         cur.close()
         return len(ret)
 
-    def add_user(self, username, pwd, email):
+    def add_user(self, username, pwd, email, role_id):
         """
         添加新用户  传递hash 之后的pwd 返回用户ID值
         """
         cur = self.__con.cursor()
         sqlstr = "INSERT into %s (user_name, pwd_hash, email, role_id, reg_time) VALUES " \
-                 "('%s', '%s', '%s', %u, NOW())" % (self.__table_name, username, pwd, email, 0)
+                 "('%s', '%s', '%s', %u, NOW())" % (self.__table_name, username, pwd, email, role_id)
         ret = cur.execute(sqlstr)
         self.__con.commit()
         if ret != 1:

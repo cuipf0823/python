@@ -6,8 +6,14 @@ from werkzeug.security import check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
 from flask_login import UserMixin
+from flask_login import AnonymousUserMixin
 from . import login_manager
 from .dbproxy import DBUserProxy
+
+
+USER_ROLE = 1
+MODERATOR_ROLE = 2
+ADMIN_ROLE = 3
 
 
 class Permission:
@@ -19,6 +25,40 @@ class Permission:
 
     def __init__(self):
         pass
+
+
+class Role:
+    """
+    用户角色
+    """
+    roles = {
+        USER_ROLE: (Permission.FOLLOW | Permission.COMMENT | Permission.WRITE_ARTICLES, True, 'User'),
+        MODERATOR_ROLE: (Permission.FOLLOW |
+                         Permission.COMMENT |
+                         Permission.WRITE_ARTICLES |
+                         Permission.MANAGER_COMMENTS, False, 'Moderator'),
+        ADMIN_ROLE: (0xff, False, 'Administrator')
+        }
+
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def permissions(role_id):
+        if role_id in roles.keys:
+            return roles[role_id][0]
+        return 0
+
+
+class AnonymousUser(AnonymousUserMixin):
+
+    @staticmethod
+    def can(permissions):
+        return False
+
+    @staticmethod
+    def is_administrator():
+        return False
 
 
 class User(UserMixin):
@@ -70,7 +110,10 @@ class User(UserMixin):
         return True
 
     def can(self, permissions):
-        return
+        return permissions & Role.permissions(self._role_id) == permissions
+
+    def is_administrator(self):
+        return self.can(Permission.ADMINISTER)
 
     @property
     def confirmed(self):
@@ -151,13 +194,19 @@ class ManageUser:
         return None
 
     def add_user(self, username, pwd, email):
-        user_id = self.__db.add_user(username, generate_password_hash(pwd), email)
+        # 判断用户角色ID
+        if email == current_app.config['MAIL_ADMIN']:
+            role_id = ADMIN_ROLE
+        else:
+            role_id = USER_ROLE
+        user_id = self.__db.add_user(username, generate_password_hash(pwd), email, role_id)
         if user_id != 0:
             user = User()
             user.id = user_id
             user.username = username
             user.password_hash = pwd
             user.email = email
+            user.role_id = role_id
             self.__users[user_id] = user
             return user
         return None
@@ -186,6 +235,7 @@ class ManageUser:
 
 
 UsersManager = ManageUser()
+login_manager.anonymous_user = AnonymousUser
 
 
 @login_manager.user_loader
