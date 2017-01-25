@@ -121,9 +121,33 @@ def demo_pressure():
             break
 
 
+# 排序sort sort可以对列表类型，集合类型和有序集合类型进行排序
+def demo_sort():
+    set_name = 'letters'
+    set_name1 = 'letters1'
+    r.sadd(set_name, 'a', 'k', 'h', 'b', 'd')
+    r.sadd(set_name1, 'y', 'k', 'u', 'c', 'd')
+    print r.sdiff(set_name, set_name1)
+    print r.sdiff(set_name1, set_name)
+    set_name2 = 'integer'
+    r.sadd(set_name2, 100, 2, 3, 9, 10, 89)
+    print r.sort(set_name2)
+    print r.sort(set_name2, None, None, None, None, True)
+    # 使用by sort 将lt中元素排序，按照item:*的值进行
+    lt = 'sore'
+    r.lpush(lt, 1, 2, 3)
+    r.set('item:1', 50)
+    r.set('item:2', -10)
+    r.set('item:3', 100)
+    print r.sort(lt, None, None, 'item:*')
+
+
+
+
 if __name__ == '__main__':
     demo_string()
     demo_hash_table()
     demo_transaction()
     # demo_expire()
-    demo_pressure()
+    # demo_pressure()
+    demo_sort()
