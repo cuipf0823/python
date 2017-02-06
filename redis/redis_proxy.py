@@ -3,6 +3,10 @@
 
 import redis
 import time
+import threading
+import random
+
+
 r = redis.Redis(host='192.168.208.129', port=6379, db=0)
 
 
@@ -142,6 +146,28 @@ def demo_sort():
     print r.sort(lt, None, None, 'item:*')
 
 
+def insert_data(queue, queue1):
+    count = 0
+    while True:
+        if count >= 10:
+            break
+        else:
+            r.lpush(queue1, random.random())
+            r.lpush(queue, random.randint(1, 999))
+            count += 1
+            time.sleep(1)
+    pass
+
+
+def demo_queue(inst, queue, queue1):
+    """
+    redis 实现普通的任务队列
+    brpop 可以同时检测多个队列，利用这个机制可以实现优先队列，多个键则是从左到右的顺序取出
+    """
+    while True:
+        task = inst.brpop((queue, queue1), 0)
+        print task
+    pass
 
 
 if __name__ == '__main__':
@@ -151,3 +177,10 @@ if __name__ == '__main__':
     # demo_expire()
     # demo_pressure()
     demo_sort()
+    queue_name = 'queue'
+    queue_name1 = 'queue1'
+    thread = threading.Thread(target=demo_queue, args=(r, queue_name, queue_name1))
+    thread.start()
+    insert_data(queue_name, queue_name1)
+
+
