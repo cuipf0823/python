@@ -170,6 +170,48 @@ def demo_queue(inst, queue, queue1):
     pass
 
 
+###################################################################
+# redis实际使用
+# redis实现用户登录和注册
+def register(email, name, pwd):
+    """
+    这里不再做参数的校验
+    键名：user：id
+    添加散列类型的键：email.to.id 来保存邮箱和用户ID之间的关系
+    """
+    user_id = r.incr('users:count')
+    # 存储用户信息
+    r.hmset('user:%d' % user_id, {'email': email, 'name': name, 'password': pwd})
+    r.hset('email.to.id', email, user_id)
+
+
+# 用户登录验证email和pwd，首先通过email.to.id获取用户ID
+def login(email, password):
+    user_id = r.hget(email)
+    if user_id != 0:
+        pwd = r.hget('user:%d' % user_id, 'password')
+        if pwd == password:
+            print 'login successful'
+    else:
+        print 'user not register'
+
+
+# 修改密码 防止用户频繁访问
+def change_pwd(email):
+    key_name = 'rate.limiting:%s' % email
+    if r.llen(key_name) < 10:
+        r.lpush(key_name, time.time())
+    else:
+        last_time = r.lindex(key_name, -1)
+        if time.time() - last_time < 60:
+            print 'visit too frequently'
+            return
+        else:
+            r.lpush(key_name, time.time())
+            r.ltrim(key_name, 0, 9)
+    # 发送修改密码连接
+
+
 if __name__ == '__main__':
     demo_string()
     demo_hash_table()
