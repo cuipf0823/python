@@ -212,17 +212,52 @@ def change_pwd(email):
     # 发送修改密码连接
 
 
+# 实现输入自动完成
+def init_data():
+    ruby = 'ruby'
+    re = 'redis'
+    r.sadd('prefix:r', ruby, re)
+    r.sadd('prefix:ru', ruby)
+    r.sadd('prefix:rub', ruby)
+    r.sadd('prefix:ruby', ruby)
+    r.sadd('prefix:re', re)
+    r.sadd('prefix:red', re)
+    r.sadd('prefix:redi', re)
+    auto = 'autocomplete'
+    r.zadd(auto, 'r', 0, 're', 0, 'red', 0, 'redis*', 0, 'ru', 0, 'rub', 0, 'ruby*', 0)
+
+
+# 自动完成如果要实现的更加完善一点 可以保存每个标签的访问量然后利用sort加by参数排序
+def auto_in(prefix):
+    key = 'prefix:%s' % prefix
+    print r.smembers(key)
+
+
+# 使用有序集合完成实现自动输入，zrange取值可以参考标签的平均长度和需要获取标签的数量来决定
+# 返回结果遍历即可，区域前缀匹配且结尾是*的
+def auto_in1(prefix):
+    rank = r.zrank('autocomplete', prefix)
+    results = r.zrange('autocomplete', rank + 1, rank + 100)
+    print results
+
+
 if __name__ == '__main__':
     demo_string()
     demo_hash_table()
     demo_transaction()
     # demo_expire()
     # demo_pressure()
+    """
     demo_sort()
     queue_name = 'queue'
     queue_name1 = 'queue1'
     thread = threading.Thread(target=demo_queue, args=(r, queue_name, queue_name1))
     thread.start()
     insert_data(queue_name, queue_name1)
+    """
+    init_data()
+    auto_in('r')
+    auto_in('re')
+    auto_in1('r')
 
 
