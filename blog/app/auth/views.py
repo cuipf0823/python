@@ -114,8 +114,8 @@ def password_reset_request():
         return redirect(url_for('main.index'))
     form = PasswordResetRequestForm()
     if form.validate_on_submit():
-        user = UsersManager.get_user(form.email.data)
-        if user:
+        user = get_user(form.email.data)
+        if user is not None:
             token = user.generate_reset_token()
             send_mail(user.email, 'Reset Your Password', 'auth/email/reset_password',
                       user=user, token=token, next=request.args.get('next'))
@@ -130,15 +130,12 @@ def password_reset(token):
         return redirect(url_for('main.index'))
     form = PasswordResetForm()
     if form.validate_on_submit():
-        user = UsersManager.get_user(form.email.data)
+        user = get_user(form.email.data)
         if user is None:
             return redirect(url_for('main.index'))
-        if user.reset_pwd(token, form.pwd.data):
-            UsersManager.reset_pwd(user.id, form.pwd.data)
-            flash('Your password has been updated')
-            return redirect(url_for('auth.login'))
-        else:
-            return redirect(url_for('main.index'))
+        change_password(user.id, form.pwd.data)
+        flash('Your password has been updated')
+        return redirect(url_for('auth.login'))
     return render_template('auth/reset_password.html', form=form)
 
 

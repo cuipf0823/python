@@ -58,3 +58,14 @@ def change_password(user_id, pwd):
     """
     return rd.hset('user:%d' % user_id, 'password', pwd)
 
+
+def is_email_reg(email):
+    """
+    判断email是否注册过
+    """
+    return rd.hexists('email.to.id', email)
+
+
+def is_user_reg(name):
+    pass
+

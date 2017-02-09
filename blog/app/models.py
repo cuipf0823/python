@@ -166,11 +166,17 @@ class User(UserMixin):
 
 
 def get_user(email):
-    return User(redisproxy.get_user(email))
+    user_info = redisproxy.get_user(email)
+    if user_info is not None:
+        return User(user_info)
+    return user_info
 
 
 def get_user_by_id(user_id):
-    return User(redisproxy.get_user_by_id(user_id))
+    user_info = redisproxy.get_user_by_id(user_id)
+    if user_info is not None:
+        return User(user_info)
+    return user_info
 
 
 def register_user(name, pwd, email, role_id):

@@ -11,7 +11,6 @@ from wtforms.validators import DataRequired
 from wtforms.validators import Length
 from wtforms.validators import Email
 from wtforms.validators import Regexp, EqualTo
-from ..models import UsersManager
 
 
 class LoginForm(FlaskForm):
