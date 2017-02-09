@@ -10,12 +10,15 @@ from flask_login import LoginManager
 from config import config
 import MySQLdb
 import os
+import redis
 
 
 bootstrap = Bootstrap()
 mail = Mail()
 moment = Moment()
-db = None
+
+rd = None
+
 
 login_manager = LoginManager()
 # 防止会话被篡改，设置为strong，会记录客户端的IP和浏览器的用户代理信息
@@ -33,9 +36,9 @@ def create_app(config_name):
     bootstrap.init_app(app)
     mail.init_app(app)
     moment.init_app(app)
-    global db
-    db = MySQLdb.connect(config[config_name].DB_IP, config[config_name].DB_USERNAME,
-                         config[config_name].DB_PWD, config[config_name].DB_NAME)
+    global rd
+    rd = redis.Redis(host=config[config_name].REDIS_IP, port=config[config_name].REDIS_PORT,
+                     db=config[config_name].REDIS_DB)
     login_manager.init_app(app)
 
     # 注册蓝图

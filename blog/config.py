@@ -28,19 +28,16 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    DB_IP = os.environ.get('DB_DEV_IP')
-    DB_USERNAME = os.environ.get('DB_DEV_USERNAME')
-    DB_PWD = os.environ.get('DB_DEV_PWD')
-    DB_NAME = os.environ.get('DB_DEV_NAME')
+    REDIS_IP = os.environ.get('REDIS_DEV_IP')
+    REDIS_PORT = os.environ.get('REDIS_DEV_PORT')
+    REDIS_DB = os.environ.get('REDIS_DEV_DB')
 
 
 class TestConfig(Config):
     TESTING = True
-    DB_IP = os.environ.get('DB_DEV_IP')
-    DB_USERNAME = os.environ.get('DB_DEV_USERNAME')
-    DB_PWD = os.environ.get('DB_DEV_PWD')
-    DB_NAME = os.environ.get('DB_DEV_NAME')
-
+    REDIS_IP = os.environ.get('REDIS_TEST_IP')
+    REDIS_PORT = os.environ.get('REDIS_TEST_PORT')
+    REDIS_DB = os.environ.get('REDIS_TEST_DB')
 
 config = {
     'development': DevelopmentConfig,

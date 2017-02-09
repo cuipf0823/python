@@ -11,7 +11,7 @@ from flask_login import logout_user
 from flask_login import login_required
 from flask_login import current_user
 from . import auth
-from ..models import UsersManager
+from ..models import get_user, register_user, change_password
 from .forms import LoginForm
 from .forms import RegistrationForm
 from .forms import ChangePwdForm
@@ -24,7 +24,7 @@ from ..email import send_mail
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        user = UsersManager.get_user(form.email.data)
+        user = get_user(form.email.data)
         if user is not None and user.verify_password(form.password.data):
             login_user(user, form.rem_me.data)
             return redirect(request.args.get('next') or url_for('main.index'))
@@ -43,8 +43,8 @@ def logout():
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = UsersManager.add_user(form.username.data, form.password.data, form.email.data)
-        if user is not None:
+        if register_user(form.username.data, form.password.data, form.email.data, 0) != 0:
+            user = get_user(form.email.data)
             token = user.generate_confirmation_token()
             send_mail(form.email.data, 'Confirm Your Account', 'auth/email/confirm', user=user, token=token)
             flash('A confirmation email has been sent to you by email.')
@@ -100,7 +100,7 @@ def change_pwd():
     if form.validate_on_submit():
         if current_user.verify_password(form.old_pwd.data):
             current_user.password_hash = form.pwd.data
-            UsersManager.change_pwd(current_user.id, current_user.password_hash)
+            change_password(current_user.id, current_user.password_hash)
             flash('You password has been updated.')
             return redirect(url_for('main.index'))
         else:
