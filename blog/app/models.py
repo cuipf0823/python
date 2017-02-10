@@ -1,14 +1,11 @@
 # !/usr/bin/python
 # coding=utf-8
-from collections import OrderedDict
-
 from flask import current_app
 from flask_login import AnonymousUserMixin
 from flask_login import UserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from werkzeug.security import check_password_hash
 from werkzeug.security import generate_password_hash
-
 import redisproxy
 from . import login_manager
 
@@ -95,8 +92,6 @@ class User(UserMixin):
         if data.get('confirm') != self._id:
             return False
         self._confirmed = True
-        # 数据库中设置邮箱验证
-        print "confirm"
         redisproxy.confirm(self._id)
         return True
 

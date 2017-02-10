@@ -29,7 +29,7 @@ def get_user(email):
         user_dict['name'] = user_info[0]
         user_dict['password'] = user_info[1]
         user_dict['role_id'] = int(user_info[2])
-        user_dict['confirmed'] = (user_info[3] is None and 0 or 1)
+        user_dict['confirmed'] = (0 if user_info[3] is None else int(user_info[3]))
         user_dict['email'] = email
         return user_dict
     else:
@@ -49,7 +49,7 @@ def get_user_by_id(user_id):
         user_dict['password'] = user_info[1]
         user_dict['role_id'] = int(user_info[2])
         user_dict['email'] = user_info[3]
-        user_dict['confirmed'] = (user_info[4] is None and 0 or 1)
+        user_dict['confirmed'] = (0 if user_info[4] is None else int(user_info[4]))
         return user_dict
     else:
         return None
@@ -77,5 +77,6 @@ def is_username_reg(name):
 
 
 def confirm(user_id):
+    print "redisproxy  confirmed: %d" % user_id
     return rd.hset('user:%d' % user_id, 'confirmed', 1)
 
