@@ -96,6 +96,8 @@ class User(UserMixin):
             return False
         self._confirmed = True
         # 数据库中设置邮箱验证
+        print "confirm"
+        redisproxy.confirm(self._id)
         return True
 
     def reset_pwd(self, token, new_pwd):
@@ -180,11 +182,19 @@ def get_user_by_id(user_id):
 
 
 def register_user(name, pwd, email, role_id):
-    return redisproxy.reg_user(name, pwd, email, role_id)
+    return redisproxy.reg_user(name, generate_password_hash(pwd), email, role_id)
 
 
 def change_password(user_id, pwd):
-    return redisproxy.change_password(user_id, pwd)
+    return redisproxy.change_password(user_id, generate_password_hash(pwd))
+
+
+def is_email_register(email):
+    return redisproxy.is_email_reg(email)
+
+
+def is_name_register(username):
+    return redisproxy.is_username_reg(username)
 
 
 login_manager.anonymous_user = AnonymousUser
