@@ -111,7 +111,8 @@ class User(UserMixin):
         return permissions & Role.permissions(self._role_id) == permissions
 
     def is_administrator(self):
-        return self.can(Permission.ADMINISTER)
+        #return self.can(Permission.ADMINISTER)
+        return True
 
     @property
     def confirmed(self):
@@ -171,6 +172,13 @@ def get_user(email):
 
 def get_user_by_id(user_id):
     user_info = redisproxy.get_user_by_id(user_id)
+    if user_info is not None:
+        return User(user_info)
+    return user_info
+
+
+def get_user_by_name(name):
+    user_info = redisproxy.get_user_by_name(name)
     if user_info is not None:
         return User(user_info)
     return user_info
