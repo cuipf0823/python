@@ -16,7 +16,6 @@ itsdangerous==0.24
 Jinja2==2.8
 kombu==4.0.2
 MarkupSafe==0.23
-MySQL-python==1.2.5
 pytz==2016.10
 redis==2.10.5
 vine==1.1.3
