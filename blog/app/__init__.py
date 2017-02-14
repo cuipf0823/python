@@ -2,13 +2,11 @@
 # coding=utf-8
 
 from flask import Flask
-from flask import render_template
 from flask_bootstrap import Bootstrap
 from flask_mail import Mail
 from flask_moment import Moment
 from flask_login import LoginManager
 from config import config
-import os
 import redis
 
 
