@@ -1,5 +1,6 @@
 # !/usr/bin/python
 # coding=utf-8
+from datetime import datetime
 from flask import current_app
 from flask_login import AnonymousUserMixin
 from flask_login import UserMixin
@@ -41,13 +42,15 @@ class Role:
     def __init__(self):
         pass
 
-    @staticmethod
-    def permissions(role_id):
-        if role_id in roles.keys:
-            return roles[role_id][0]
+    @classmethod
+    def permissions(cls, role_id):
+        if role_id in cls.roles.keys():
+            return cls.roles[role_id][0]
         return 0
 
 
+# 处于一致性考虑，对象继承于AnonymousUserMixin类，并将其设为用户登录时current_user的值
+# 目的是：这样用户不用检查是否登录，就可以自由调用current_user.can()和current_user.is_administrator()
 class AnonymousUser(AnonymousUserMixin):
 
     @staticmethod
@@ -67,6 +70,15 @@ class User(UserMixin):
         self._email = dicts['email']
         self._role_id = dicts['role_id']
         self._confirmed = dicts['confirmed']
+        self._location = dicts['location']
+        self._about_me = dicts['about_me']
+        # datetime.strptime('2017-02-14 09:20:54.666000', '%Y-%m-%d %H:%M:%S.%f')
+        self._member_since = None
+        if dicts['member_since'] is not None:
+            self._member_since = datetime.strptime(dicts['member_since'], '%Y-%m-%d %H:%M:%S.%f')
+        self._last_seen = None
+        if dicts['last_seen'] is not None:
+            self._last_seen = datetime.strptime(dicts['last_seen'], '%Y-%m-%d %H:%M:%S.%f')
 
     def verify_password(self, pwd):
         return check_password_hash(self._password_hash, pwd)
@@ -111,8 +123,12 @@ class User(UserMixin):
         return permissions & Role.permissions(self._role_id) == permissions
 
     def is_administrator(self):
-        #return self.can(Permission.ADMINISTER)
-        return True
+        return self.can(Permission.ADMINISTER)
+
+    def ping(self):
+        utctime = datetime.utcnow()
+        self._last_seen = utctime
+        redisproxy.update_last_seen(self._id, utctime)
 
     @property
     def confirmed(self):
@@ -162,6 +178,38 @@ class User(UserMixin):
     def role_id(self, value):
         self._role_id = value
 
+    @property
+    def about_me(self):
+        return self._about_me
+
+    @about_me.setter
+    def about_me(self, value):
+        self._about_me = value
+
+    @property
+    def location(self):
+        return self._location
+
+    @location.setter
+    def location(self, value):
+        self._location = value
+
+    @property
+    def member_since(self):
+        return self._member_since
+
+    @member_since.setter
+    def member_since(self, value):
+        self._member_since = value
+
+    @property
+    def last_seen(self):
+        return self._last_seen
+
+    @last_seen.setter
+    def last_seen(self, value):
+        self._last_seen = value
+
 
 def get_user(email):
     user_info = redisproxy.get_user(email)
@@ -185,7 +233,10 @@ def get_user_by_name(name):
 
 
 def register_user(name, pwd, email, role_id):
-    return redisproxy.reg_user(name, generate_password_hash(pwd), email, role_id)
+    if email == current_app.config['MAIL_ADMIN']:
+        return redisproxy.reg_user(name, generate_password_hash(pwd), email, ADMIN_ROLE)
+    else:
+        return redisproxy.reg_user(name, generate_password_hash(pwd), email, USER_ROLE)
 
 
 def change_password(user_id, pwd):
