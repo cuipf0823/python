@@ -8,7 +8,6 @@ from flask_mail import Mail
 from flask_moment import Moment
 from flask_login import LoginManager
 from config import config
-import MySQLdb
 import os
 import redis
 
