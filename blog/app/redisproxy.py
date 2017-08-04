@@ -113,7 +113,7 @@ def is_username_reg(name):
 
 
 def confirm(user_id):
-    print "redisproxy  confirmed: %d" % user_id
+    print("redisproxy  confirmed: %d" % user_id)
     return rd.hset('user:%d' % user_id, 'confirmed', 1)
 
 

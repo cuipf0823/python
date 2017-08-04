@@ -7,7 +7,7 @@ from flask_login import UserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from werkzeug.security import check_password_hash
 from werkzeug.security import generate_password_hash
-import redisproxy
+from . import redisproxy
 from . import login_manager
 
 USER_ROLE = 1
@@ -99,7 +99,7 @@ class User(UserMixin):
         try:
             data = s.loads(token)
         except Exception as e:
-            print e
+            print(e)
             return False
         if data.get('confirm') != self._id:
             return False
@@ -112,7 +112,7 @@ class User(UserMixin):
         try:
             data = s.loads(token)
         except Exception as e:
-            print e
+            print(e)
             return False
         if data.get('reset') != self._id:
             return False
@@ -259,6 +259,6 @@ def load_user(user_id):
     """
     回调函数，根据用户ID查找用户
     """
-    print "user %s login successful" % user_id
+    print("user %s login successful" % user_id)
     return get_user_by_id(int(user_id))
 
