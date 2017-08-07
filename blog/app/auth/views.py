@@ -43,7 +43,7 @@ def logout():
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
-        if register_user(form.username.data, form.password.data, form.email.data, 0) != 0:
+        if register_user(form.username.data, form.password.data, form.email.data) != 0:
             user = get_user(form.email.data)
             token = user.generate_confirmation_token()
             send_mail(form.email.data, 'Confirm Your Account', 'auth/email/confirm', user=user, token=token)

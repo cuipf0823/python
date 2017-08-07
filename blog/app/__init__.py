@@ -42,7 +42,7 @@ def create_app(config_name):
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
 
-    from auth import auth as auth_blueprint
+    from .auth import auth as auth_blueprint
     # url_prefix为可选参数，如果设置，注册后的蓝本中定义的所有路由都会加上指定的前缀
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
     return app

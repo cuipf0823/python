@@ -1,4 +1,4 @@
-# !/usr/bin/python
+ßßß# !/usr/bin/python
 # coding=utf-8
 from app import db
 

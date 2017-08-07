@@ -30,7 +30,7 @@ class DevelopmentConfig(Config):
     DEBUG = True
     REDIS_IP = os.environ.get('REDIS_DEV_IP')
     REDIS_PORT = os.environ.get('REDIS_DEV_PORT')
-    REDIS_DB = os.environ.get('REDIS_DEV_DB')
+    REDIS_DB = int(os.environ.get('REDIS_DEV_DB'))
 
 
 class TestConfig(Config):

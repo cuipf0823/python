@@ -24,19 +24,19 @@ def get_user(email):
     """
     user_id = rd.hget('email.to.id', email)
     if user_id is not None:
-        user_info = rd.hmget('user:%s' % user_id, 'name', 'password', 'role_id', 'confirmed', 'location', 'about_me',
+        user_info = rd.hmget('user:%s' % user_id.decode("utf-8"), 'name', 'password', 'role_id', 'confirmed', 'location', 'about_me',
                              'member_since', 'last_seen')
         user_dict = dict()
         user_dict['user_id'] = int(user_id)
-        user_dict['name'] = user_info[0]
-        user_dict['password'] = user_info[1]
-        user_dict['role_id'] = int(user_info[2])
-        user_dict['confirmed'] = (0 if user_info[3] is None else int(user_info[3]))
+        user_dict['name'] = user_info[0].decode("utf-8")
+        user_dict['password'] = user_info[1].decode("utf-8")
+        user_dict['role_id'] = int(user_info[2].decode("utf-8"))
+        user_dict['confirmed'] = (0 if user_info[3] is None else int(user_info[3].decode("utf-8")))
         user_dict['email'] = email
-        user_dict['location'] = (None if user_info[4] is None else user_info[4])
-        user_dict['about_me'] = (None if user_info[5] is None else user_info[5])
-        user_dict['member_since'] = (None if user_info[6] is None else user_info[6])
-        user_dict['last_seen'] = (None if user_info[7] is None else user_info[7])
+        user_dict['location'] = (None if user_info[4] is None else user_info[4].decode("utf-8"))
+        user_dict['about_me'] = (None if user_info[5] is None else user_info[5].decode("utf-8"))
+        user_dict['member_since'] = (None if user_info[6] is None else user_info[6].decode("utf-8"))
+        user_dict['last_seen'] = (None if user_info[7] is None else user_info[7].decode("utf-8"))
         return user_dict
     else:
         return None
@@ -49,19 +49,19 @@ def get_user_by_name(name):
     """
     user_id = rd.hget('name.to.id', name)
     if user_id is not None:
-        user_info = rd.hmget('user:%s' % user_id, 'email', 'password', 'role_id', 'confirmed', 'location', 'about_me'
+        user_info = rd.hmget('user:%s' % user_id.decode("utf-8"), 'email', 'password', 'role_id', 'confirmed', 'location', 'about_me'
                              , 'member_since', 'last_seen')
         user_dict = dict()
         user_dict['user_id'] = int(user_id)
-        user_dict['email'] = user_info[0]
-        user_dict['password'] = user_info[1]
-        user_dict['role_id'] = int(user_info[2])
-        user_dict['confirmed'] = (0 if user_info[3] is None else int(user_info[3]))
+        user_dict['email'] = user_info[0].decode("utf-8")
+        user_dict['password'] = user_info[1].decode("utf-8")
+        user_dict['role_id'] = int(user_info[2].decode("utf-8"))
+        user_dict['confirmed'] = (0 if user_info[3] is None else int(user_info[3].decode("utf-8")))
         user_dict['name'] = name
-        user_dict['location'] = (None if user_info[4] is None else user_info[4])
-        user_dict['about_me'] = (None if user_info[5] is None else user_info[5])
-        user_dict['member_since'] = (None if user_info[6] is None else user_info[6])
-        user_dict['last_seen'] = (None if user_info[7] is None else user_info[7])
+        user_dict['location'] = (None if user_info[4] is None else user_info[4].decode("utf-8"))
+        user_dict['about_me'] = (None if user_info[5] is None else user_info[5].decode("utf-8"))
+        user_dict['member_since'] = (None if user_info[6] is None else user_info[6].decode("utf-8"))
+        user_dict['last_seen'] = (None if user_info[7] is None else user_info[7].decode("utf-8"))
         return user_dict
     else:
         return None
@@ -77,15 +77,15 @@ def get_user_by_id(user_id):
     if user_info is not None and user_info[0] is not None:
         user_dict = dict()
         user_dict['user_id'] = user_id
-        user_dict['name'] = user_info[0]
-        user_dict['password'] = user_info[1]
-        user_dict['role_id'] = int(user_info[2])
-        user_dict['email'] = user_info[3]
-        user_dict['confirmed'] = (0 if user_info[4] is None else int(user_info[4]))
-        user_dict['location'] = (None if user_info[5] is None else user_info[5])
-        user_dict['about_me'] = (None if user_info[6] is None else user_info[6])
-        user_dict['member_since'] = (None if user_info[7] is None else user_info[7])
-        user_dict['last_seen'] = (None if user_info[8] is None else user_info[8])
+        user_dict['name'] = user_info[0].decode("utf-8")
+        user_dict['password'] = user_info[1].decode("utf-8")
+        user_dict['role_id'] = int(user_info[2].decode("utf-8"))
+        user_dict['email'] = user_info[3].decode("utf-8")
+        user_dict['confirmed'] = (0 if user_info[4] is None else int(user_info[4].decode("utf-8")))
+        user_dict['location'] = (None if user_info[5] is None else user_info[5].decode("utf-8"))
+        user_dict['about_me'] = (None if user_info[6] is None else user_info[6].decode("utf-8"))
+        user_dict['member_since'] = (None if user_info[7] is None else user_info[7].decode("utf-8"))
+        user_dict['last_seen'] = (None if user_info[8] is None else user_info[8].decode("utf-8"))
         return user_dict
     else:
         return None
@@ -113,11 +113,15 @@ def is_username_reg(name):
 
 
 def confirm(user_id):
-    print "redisproxy  confirmed: %d" % user_id
+    print("redisproxy  confirmed: %d" % user_id)
     return rd.hset('user:%d' % user_id, 'confirmed', 1)
 
 
 def update_last_seen(user_id, utctime):
     return rd.hset('user:%d' % user_id, 'last_seen', utctime)
+
+
+def update_profile(user_id, username, location, about_me):
+    return rd.hmset('user:%d' % user_id, {'name': username, 'location': location, 'about_me': about_me})
 
 
