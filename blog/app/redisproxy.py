@@ -123,3 +123,8 @@ def update_last_seen(user_id, utctime):
 
 def update_profile(user_id, username, location, about_me):
     return rd.hmset('user:%d' % user_id, {'name': username, 'location': location, 'about_me': about_me})
+
+
+def update_admin_profile(user_id, user):
+    return rd.hmset('user:%d' % user_id, {'name': user.username, 'email': user.email, 'confirmed': user.confirmed,
+                                          'role_id': user.role_id, 'location': user.location, 'about_me': user.about_me})

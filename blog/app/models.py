@@ -1,7 +1,7 @@
 # !/usr/bin/python
 # coding=utf-8
 from datetime import datetime
-from flask import current_app
+from flask import current_app, request
 from flask_login import AnonymousUserMixin
 from flask_login import UserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
@@ -9,18 +9,21 @@ from werkzeug.security import check_password_hash
 from werkzeug.security import generate_password_hash
 from . import redisproxy
 from . import login_manager
+import hashlib
 
-USER_ROLE = 1
-MODERATOR_ROLE = 2
-ADMIN_ROLE = 3
+
+ANONYMOUS_ROLE = 0  # 匿名用户 为登陆的用户, 只有阅读权限
+USER_ROLE = 1  # 普通用户  新用户默认角色, 可以发表文章, 评论, 关注他人
+MODERATOR_ROLE = 2  # 协管员 相比普通用户 增加审查不当平路的权限
+ADMIN_ROLE = 3  # 管理员 全部权限 包括修改其他用户角色的权限
 
 
 class Permission:
-    FOLLOW = 0x01
-    COMMENT = 0x02
-    WRITE_ARTICLES = 0x04
-    MANAGER_COMMENTS = 0x08
-    ADMINISTER = 0x80
+    FOLLOW = 0x01  # 关注其他用户
+    COMMENT = 0x02  # 在他人文章下面发布评论
+    WRITE_ARTICLES = 0x04  # 写文章
+    MANAGER_COMMENTS = 0x08  # 查看他人发表的评论
+    ADMINISTER = 0x80  # 管理网站
 
     def __init__(self):
         pass
@@ -129,6 +132,15 @@ class User(UserMixin):
         utctime = datetime.utcnow()
         self._last_seen = utctime
         redisproxy.update_last_seen(self._id, utctime)
+
+    def gravatar(self, size=100, default='identicon', rating='g'):
+        if request.is_secure:
+            url = 'https://secure.gravatar.com/avatar'
+        else:
+            url = 'http://www.gravatar.com/avatar'
+        vhash = hashlib.md5(self.email.encode('utf-8')).hexdigest()
+        return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
+            url=url, hash=vhash, size=size, default=default, rating=rating)
 
     @property
     def confirmed(self):
@@ -255,6 +267,9 @@ def update_frofile(user_id, user_name, location, about_me):
     return redisproxy.update_profile(user_id, user_name, location, about_me)
 
 
+def update_admin_profile(user_id, user):
+    return redisproxy.update_admin_profile(user_id, user)
+
 login_manager.anonymous_user = AnonymousUser
 
 
@@ -265,4 +280,3 @@ def load_user(user_id):
     """
     print("user %s login successful" % user_id)
     return get_user_by_id(int(user_id))
-
