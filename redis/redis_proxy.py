@@ -14,17 +14,17 @@ r = redis.Redis(host='192.168.208.129', port=6379, db=0)
 def demo_string():
     r.set('name', 'jack')
     r.set('email', 'jackjack@yahoo.com')
-    print r.get('name')
-    print r.get('email')
+    print(r.get('name'))
+    print(r.get('email'))
     r.incr('age')
     r.incr('age', 20)
-    print r.get('age')
+    print(r.get('age'))
     r.decr('age', 5)
-    print r.get('age')
-    print r.strlen('name')
+    print(r.get('age'))
+    print(r.strlen('name'))
 
     r.mset({'key1': 'v1', 'key2': 'v2'})
-    print r.mget(['key1', 'key2'])
+    print(r.mget(['key1', 'key2']))
 
 
 # 散列表
@@ -35,7 +35,7 @@ def demo_hash_table():
     r.hset(key, 'author', 'jack')
     r.hset(key, 'time', '2016-12-16')
     r.hset(key, 'content', 'test')
-    print r.hgetall(key)
+    print(r.hgetall(key))
 
 
 # transaction事务
@@ -52,7 +52,7 @@ def demo_transaction():
                 break
             except WatchError:
                 continue
-    print r.get('file')
+    print(r.get('file'))
 
 
 # 生存时间 限时优惠 缓存 验证码等 多了一点时间就会删除这些数据 redis中可以使用expire实现
@@ -62,15 +62,15 @@ def demo_expire():
     r.set('code', '123456')
     ret = r.expire('code', 6)
     if ret:
-        print 'expire set success'
+        print('expire set success')
     else:
         return False
     while True:
         if r.exists('code'):
-            print r.get('code')
-            print r.ttl('code')
+            print(r.get('code'))
+            print(r.ttl('code'))
         else:
-            print 'code timeout del it'
+            print('code timeout del it')
             break
         time.sleep(1)
 
@@ -81,9 +81,9 @@ def visit(ip):
     key = 'rate.limiting:%s' % ip
     if r.exists(key):
         times = r.incr(key)
-        print times
+        print(times)
         if times > 50:
-            print 'visit too frequent'
+            print('visit too frequent')
             return False
     else:
         with r.pipeline() as pipe:
@@ -100,11 +100,11 @@ def optimize_visit(ip):
     length = r.llen(lt)
     if length < 10:
         r.lpush(lt, time.time())
-        print r.l
+        print(r.l)
     else:
         te = float(r.lindex(lt, 1))
         if time.time() - te < 60:
-            print "visit too frequent optimize visit"
+            print("visit too frequent optimize visit")
             return False
         else:
             r.lpush(lt, time.time())
@@ -117,11 +117,11 @@ def demo_pressure():
     # key = 'rate.limiting:%s' % ip
     while True:
         if not visit(ip):
-            print 'you can not visit'
+            print('you can not visit')
             break
     while True:
         if optimize_visit(ip):
-            print 'you can not visit optimize visit'
+            print('you can not visit optimize visit')
             break
 
 
@@ -131,19 +131,19 @@ def demo_sort():
     set_name1 = 'letters1'
     r.sadd(set_name, 'a', 'k', 'h', 'b', 'd')
     r.sadd(set_name1, 'y', 'k', 'u', 'c', 'd')
-    print r.sdiff(set_name, set_name1)
-    print r.sdiff(set_name1, set_name)
+    print(r.sdiff(set_name, set_name1))
+    print(r.sdiff(set_name1, set_name))
     set_name2 = 'integer'
     r.sadd(set_name2, 100, 2, 3, 9, 10, 89)
-    print r.sort(set_name2)
-    print r.sort(set_name2, None, None, None, None, True)
+    print(r.sort(set_name2))
+    print(r.sort(set_name2, None, None, None, None, True))
     # 使用by sort 将lt中元素排序，按照item:*的值进行
     lt = 'sore'
     r.lpush(lt, 1, 2, 3)
     r.set('item:1', 50)
     r.set('item:2', -10)
     r.set('item:3', 100)
-    print r.sort(lt, None, None, 'item:*')
+    print(r.sort(lt, None, None, 'item:*'))
 
 
 def insert_data(queue, queue1):
@@ -166,7 +166,7 @@ def demo_queue(inst, queue, queue1):
     """
     while True:
         task = inst.brpop((queue, queue1), 0)
-        print task
+        print(task)
     pass
 
 
@@ -191,9 +191,9 @@ def login(email, password):
     if user_id != 0:
         pwd = r.hget('user:%d' % user_id, 'password')
         if pwd == password:
-            print 'login successful'
+            print('login successful')
     else:
-        print 'user not register'
+        print('user not register')
 
 
 # 修改密码 防止用户频繁访问
@@ -204,7 +204,7 @@ def change_pwd(email):
     else:
         last_time = r.lindex(key_name, -1)
         if time.time() - last_time < 60:
-            print 'visit too frequently'
+            print('visit too frequently')
             return
         else:
             r.lpush(key_name, time.time())
@@ -230,7 +230,7 @@ def init_data():
 # 自动完成如果要实现的更加完善一点 可以保存每个标签的访问量然后利用sort加by参数排序
 def auto_in(prefix):
     key = 'prefix:%s' % prefix
-    print r.smembers(key)
+    print(r.smembers(key))
 
 
 # 使用有序集合完成实现自动输入，zrange取值可以参考标签的平均长度和需要获取标签的数量来决定
@@ -238,7 +238,7 @@ def auto_in(prefix):
 def auto_in1(prefix):
     rank = r.zrank('autocomplete', prefix)
     results = r.zrange('autocomplete', rank + 1, rank + 100)
-    print results
+    print(results)
 
 
 if __name__ == '__main__':
@@ -259,5 +259,3 @@ if __name__ == '__main__':
     auto_in('r')
     auto_in('re')
     auto_in1('r')
-
-
