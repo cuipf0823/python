@@ -7,7 +7,7 @@ from flask_login import UserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from werkzeug.security import check_password_hash
 from werkzeug.security import generate_password_hash
-from . import redisproxy
+from .data import db_users
 from . import login_manager
 import hashlib
 
@@ -107,7 +107,7 @@ class User(UserMixin):
         if data.get('confirm') != self._id:
             return False
         self._confirmed = True
-        redisproxy.confirm(self._id)
+        db_users.confirm(self._id)
         return True
 
     def reset_pwd(self, token, new_pwd):
@@ -131,7 +131,7 @@ class User(UserMixin):
     def ping(self):
         utctime = datetime.utcnow()
         self._last_seen = utctime
-        redisproxy.update_last_seen(self._id, utctime)
+        db_users.update_last_seen(self._id, utctime)
 
     def gravatar(self, size=100, default='identicon', rating='g'):
         if request.is_secure:
@@ -224,21 +224,21 @@ class User(UserMixin):
 
 
 def get_user(email):
-    user_info = redisproxy.get_user(email)
+    user_info = db_users.get_user(email)
     if user_info is not None:
         return User(user_info)
     return user_info
 
 
 def get_user_by_id(user_id):
-    user_info = redisproxy.get_user_by_id(user_id)
+    user_info = db_users.get_user_by_id(user_id)
     if user_info is not None:
         return User(user_info)
     return user_info
 
 
 def get_user_by_name(name):
-    user_info = redisproxy.get_user_by_name(name)
+    user_info = db_users.get_user_by_name(name)
     if user_info is not None:
         return User(user_info)
     return user_info
@@ -246,29 +246,29 @@ def get_user_by_name(name):
 
 def register_user(name, pwd, email):
     if email == current_app.config['MAIL_ADMIN']:
-        return redisproxy.reg_user(name, generate_password_hash(pwd), email, ADMIN_ROLE)
+        return db_users.reg_user(name, generate_password_hash(pwd), email, ADMIN_ROLE)
     else:
-        return redisproxy.reg_user(name, generate_password_hash(pwd), email, USER_ROLE)
+        return db_users.reg_user(name, generate_password_hash(pwd), email, USER_ROLE)
 
 
 def change_password(user_id, pwd):
-    return redisproxy.change_password(user_id, generate_password_hash(pwd))
+    return db_users.change_password(user_id, generate_password_hash(pwd))
 
 
 def is_email_register(email):
-    return redisproxy.is_email_reg(email)
+    return db_users.is_email_reg(email)
 
 
 def is_name_register(username):
-    return redisproxy.is_username_reg(username)
+    return db_users.is_username_reg(username)
 
 
 def update_frofile(user_id, user_name, location, about_me):
-    return redisproxy.update_profile(user_id, user_name, location, about_me)
+    return db_users.update_profile(user_id, user_name, location, about_me)
 
 
 def update_admin_profile(user_id, user):
-    return redisproxy.update_admin_profile(user_id, user)
+    return db_users.update_admin_profile(user_id, user)
 
 login_manager.anonymous_user = AnonymousUser
 
