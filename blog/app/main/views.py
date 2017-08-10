@@ -8,11 +8,13 @@ from . import main
 from ..models import get_user_by_name, update_frofile, update_admin_profile
 from ..models import get_user_by_id
 from .forms import EditProfileForm, EditProfileFormAdmin
+from .forms import PostForm
 from ..decorators import admin_required
 
 
-@main.route('/')
+@main.route('/', methods=['GET', 'POST'])
 def index():
+    form = PostForm()
     return render_template('index.html')
 
 
