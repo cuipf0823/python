@@ -10,6 +10,7 @@ from werkzeug.security import generate_password_hash
 from .data import db_users
 from . import login_manager
 import hashlib
+import time
 
 
 ANONYMOUS_ROLE = 0  # 匿名用户 为登陆的用户, 只有阅读权限
@@ -280,3 +281,44 @@ def load_user(user_id):
     """
     print("user %s login successful" % user_id)
     return get_user_by_id(int(user_id))
+
+
+class Post:
+    def __init__(self, title, author, content, category):
+        self._title = title
+        self._author = author
+        self._content = content
+        self._category = category
+        self._time = time.strftime('%Y-%m-%d %H:%M:%S')
+
+    @property
+    def title(self):
+        return self._title
+
+    @property
+    def author(self):
+        return self._author
+
+    @property
+    def content(self):
+        return self._content
+
+    @content.setter
+    def content(self, value):
+        self._content = value
+
+    @property
+    def category(self):
+        return self._category
+
+    @category.setter
+    def category(self, value):
+        self._category = value
+
+    @property
+    def time(self):
+        return self._time
+
+    def author_gravatar(self, size=100, default='identicon', rating='g'):
+        user = get_user_by_name(self.author)
+        return user.gravatar(size, default, rating)

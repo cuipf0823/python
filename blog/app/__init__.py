@@ -35,7 +35,7 @@ def create_app(config_name):
     moment.init_app(app)
     global rd
     rd = redis.Redis(host=config[config_name].REDIS_IP, port=config[config_name].REDIS_PORT,
-                     db=config[config_name].REDIS_DB)
+                     db=config[config_name].REDIS_DB, password=config[config_name].REDIS_PWD)
     login_manager.init_app(app)
 
     # 注册蓝图

@@ -31,6 +31,7 @@ class DevelopmentConfig(Config):
     REDIS_IP = os.environ.get('REDIS_DEV_IP')
     REDIS_PORT = os.environ.get('REDIS_DEV_PORT')
     REDIS_DB = int(os.environ.get('REDIS_DEV_DB'))
+    REDIS_PWD = os.environ.get('REDIS_DEV_PWD')
 
 
 class TestConfig(Config):
@@ -38,6 +39,7 @@ class TestConfig(Config):
     REDIS_IP = os.environ.get('REDIS_TEST_IP')
     REDIS_PORT = os.environ.get('REDIS_TEST_PORT')
     REDIS_DB = os.environ.get('REDIS_TEST_DB')
+    REDIS_PWD = os.environ.get('REDIS_TEST_PWD')
 
 config = {
     'development': DevelopmentConfig,

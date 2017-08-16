@@ -6,16 +6,21 @@ from flask_login import login_required
 from flask_login import current_user
 from . import main
 from ..models import get_user_by_name, update_frofile, update_admin_profile
-from ..models import get_user_by_id
-from .forms import EditProfileForm, EditProfileFormAdmin
-from .forms import PostForm
+from ..models import get_user_by_id, Post, Permission
+from ..data import db_posts
+from .forms import EditProfileForm, EditProfileFormAdmin, PostForm
 from ..decorators import admin_required
 
 
 @main.route('/', methods=['GET', 'POST'])
 def index():
     form = PostForm()
-    return render_template('index.html')
+    if current_user.can(Permission.WRITE_ARTICLES) and form.validate_on_submit():
+        post = Post(form.title.data, current_user.username, form.body.data, '')
+        db_posts.publish_post(post.title, post.author, post.content, post.category)
+        return redirect(url_for('.index'))
+    posts = db_posts.posts_by_page(0)
+    return render_template('index.html', form=form, posts=posts, permission=Permission)
 
 
 @main.route('/user/<username>')

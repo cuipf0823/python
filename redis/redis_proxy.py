@@ -5,9 +5,11 @@ import redis
 import time
 import threading
 import random
+from datetime import datetime
 
 
-r = redis.Redis(host='192.168.208.129', port=6379, db=0)
+r = redis.Redis(host='192.168.154.128', port=6379, db=1, password='123456')
+rd = r
 
 
 # 字符串类型
@@ -241,10 +243,81 @@ def auto_in1(prefix):
     print(results)
 
 
+'''
+1. 文章详细信息; 使用redis中的散列类型保存; key是'post:id'; 字段包括: title author time content category;
+2. 文章总数; 保存于posts:count中; 只增不减;
+3. 文章ID列表; 使用列表类型posts:list记录文章列表;
+    a. 新文章发布使用LPUSH将文章加入到列表中;
+    b. 删除文章 LREM
+    c. 文章分页显示 LRANGE
+4. 删除文章列表; 使用列表类型保存 posts:del:list
+'''
+
+POSTS_LIST = 'posts:list'
+POSTS_COUNT = 'posts:count'
+POSTS_DEL_LIST = 'posts:del_list'
+# 单页显示文章数
+POST_NUM_PAGE = 10
+
+
+def publish_post(title, author, content, category):
+    """
+     发布新文章 暂时不加锁 后续添加
+    """
+    post_id = rd.incr(POSTS_COUNT)
+    rd.hmset('post:{}'.format(post_id), {'title': title, 'author': author, 'content': content, 'category': category,
+                                         'time': datetime.utcnow()})
+    rd.lpush(POSTS_LIST, post_id)
+
+
+def delete_post(post_id):
+    """
+    删除文章 需要原子操作 后续修改
+    """
+    rd.lrem(POSTS_LIST, post_id, 0)
+    rd.lpush(POSTS_DEL_LIST, post_id)
+
+
+def posts_by_page(page_id):
+    """
+    分页显示
+    :param page_id:页码从1开始
+    :return:文章ID list key均为bytes
+    """
+    pages = int(rd.llen(POSTS_LIST) / POST_NUM_PAGE + 1)
+    if 0 < page_id <= pages:
+        return rd.lrange(POSTS_LIST, (page_id - 1) * POST_NUM_PAGE, page_id * POST_NUM_PAGE - 1)
+    else:
+        print('invaild param page id[{0}, {1}]'.format(1, pages))
+        return None
+
+
+def get_posts(post_id):
+    """
+    获取文章信息 返回字典 key value均为bytes
+    """
+    return rd.hgetall('post:{}'.format(post_id))
+
+
+def convert(data):
+    if isinstance(data, bytes):
+        return data.decode('utf-8')
+    if isinstance(data, dict):
+        return dict(map(convert, data.items()))
+    if isinstance(data, tuple):
+        return map(convert, data)
+    return data
+
+
+def con(b):
+    if b:
+        return "yes"
+
+
 if __name__ == '__main__':
-    demo_string()
-    demo_hash_table()
-    demo_transaction()
+    # demo_string()
+    # demo_hash_table()
+    # demo_transaction()
     # demo_expire()
     # demo_pressure()
     """
@@ -254,8 +327,12 @@ if __name__ == '__main__':
     thread = threading.Thread(target=demo_queue, args=(r, queue_name, queue_name1))
     thread.start()
     insert_data(queue_name, queue_name1)
-    """
+    
     init_data()
     auto_in('r')
     auto_in('re')
     auto_in1('r')
+    
+    print(convert(get_posts(32)))
+    """
+    print(get_posts.__doc__)
