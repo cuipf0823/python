@@ -20,7 +20,7 @@ def reg_user(username, pwd, email, role_id):
     # 保存用户信息
     rd.hmset('user:%d' % user_id, {'name': username, 'password': pwd, 'email': email, 'role_id': role_id,
                                    'member_since': datetime.utcnow(), 'confirmed': 0, 'about_me': '', 'location': '',
-                                   'last_seen': ''})
+                                   'last_seen': datetime.utcnow()})
     rd.hset('email.to.id', email, user_id)
     rd.hset('name.to.id', username, user_id)
     return user_id
@@ -49,8 +49,9 @@ def get_user_by_id(user_id):
     get user infomation by user id
     """
     user_info = util.convert(rd.hgetall('user:{}'.format(user_id)))
-    user_info['user_id'] = user_id
-    return user_info
+    if len(user_info) != 0:
+        user_info['user_id'] = int(user_id)
+        return user_info
 
 
 def change_password(user_id, pwd):

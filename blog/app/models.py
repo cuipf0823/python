@@ -72,7 +72,7 @@ class User(UserMixin):
         self._username = dicts['name']
         self._password_hash = dicts['password']
         self._email = dicts['email']
-        self._role_id = dicts['role_id']
+        self._role_id = int(dicts['role_id'])
         self._confirmed = dicts['confirmed']
         self._location = dicts['location']
         self._about_me = dicts['about_me']
@@ -279,7 +279,7 @@ def load_user(user_id):
     """
     回调函数，根据用户ID查找用户
     """
-    print("user %s login successful" % user_id)
+    print('user %s login successful' % user_id)
     return get_user_by_id(int(user_id))
 
 

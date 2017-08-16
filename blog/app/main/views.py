@@ -19,7 +19,7 @@ def index():
         post = Post(form.title.data, current_user.username, form.body.data, '')
         db_posts.publish_post(post.title, post.author, post.content, post.category)
         return redirect(url_for('.index'))
-    posts = db_posts.posts_by_page(0)
+    posts = db_posts.posts_by_page(1)
     return render_template('index.html', form=form, posts=posts, permission=Permission)
 
 
