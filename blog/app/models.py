@@ -7,8 +7,9 @@ from flask_login import UserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from werkzeug.security import check_password_hash
 from werkzeug.security import generate_password_hash
-from .data import db_users
+from .data import db_users, db_posts
 from . import login_manager
+from . import util
 import hashlib
 import time
 
@@ -284,12 +285,12 @@ def load_user(user_id):
 
 
 class Post:
-    def __init__(self, title, author, content, category):
-        self._title = title
-        self._author = author
-        self._content = content
-        self._category = category
-        self._time = time.strftime('%Y-%m-%d %H:%M:%S')
+    def __init__(self, dicts):
+        self._title = dicts['title']
+        self._author = dicts['author']
+        self._content = dicts['content']
+        self._category = dicts['category']
+        self._time = dicts['time']
 
     @property
     def title(self):
@@ -322,3 +323,29 @@ class Post:
     def author_gravatar(self, size=100, default='identicon', rating='g'):
         user = get_user_by_name(self.author)
         return user.gravatar(size, default, rating)
+
+
+def publish_post(title, author, content, category):
+    db_posts.publish_post(title, author, content, category)
+
+
+def posts_by_page(page_id):
+    post_ids = db_posts.posts_by_page(page_id)
+    if post_ids is not None:
+        posts = []
+        for post_id in post_ids:
+            posts.append(Post(db_posts.get_post(post_id)))
+        return posts
+
+
+def posts_by_author(author, page_id):
+    post_ids = db_posts.posts_by_author(author, page_id)
+    if post_ids is not None:
+        posts = []
+        for post_id in post_ids:
+            posts.append(Post(db_posts.get_post(post_id)))
+        return posts
+        
+
+
+
