@@ -12,6 +12,4 @@ def convert(data):
         return dict(map(convert, data.items()))
     if isinstance(data, tuple):
         return map(convert, data)
-    if isinstance(data, list):
-        return list(map(convert, data))
     return data

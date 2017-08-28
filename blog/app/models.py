@@ -7,11 +7,9 @@ from flask_login import UserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from werkzeug.security import check_password_hash
 from werkzeug.security import generate_password_hash
-from .data import db_users, db_posts
+from .data import db_users
 from . import login_manager
-from . import util
 import hashlib
-import time
 
 
 ANONYMOUS_ROLE = 0  # 匿名用户 为登陆的用户, 只有阅读权限
@@ -73,7 +71,7 @@ class User(UserMixin):
         self._username = dicts['name']
         self._password_hash = dicts['password']
         self._email = dicts['email']
-        self._role_id = int(dicts['role_id'])
+        self._role_id = dicts['role_id']
         self._confirmed = dicts['confirmed']
         self._location = dicts['location']
         self._about_me = dicts['about_me']
@@ -280,72 +278,5 @@ def load_user(user_id):
     """
     回调函数，根据用户ID查找用户
     """
-    print('user %s login successful' % user_id)
+    print("user %s login successful" % user_id)
     return get_user_by_id(int(user_id))
-
-
-class Post:
-    def __init__(self, dicts):
-        self._title = dicts['title']
-        self._author = dicts['author']
-        self._content = dicts['content']
-        self._category = dicts['category']
-        self._time = dicts['time']
-
-    @property
-    def title(self):
-        return self._title
-
-    @property
-    def author(self):
-        return self._author
-
-    @property
-    def content(self):
-        return self._content
-
-    @content.setter
-    def content(self, value):
-        self._content = value
-
-    @property
-    def category(self):
-        return self._category
-
-    @category.setter
-    def category(self, value):
-        self._category = value
-
-    @property
-    def time(self):
-        return self._time
-
-    def author_gravatar(self, size=100, default='identicon', rating='g'):
-        user = get_user_by_name(self.author)
-        return user.gravatar(size, default, rating)
-
-
-def publish_post(title, author, content, category):
-    db_posts.publish_post(title, author, content, category)
-
-
-def posts_by_page(page_id):
-    post_ids = db_posts.posts_by_page(page_id)
-    if post_ids is not None:
-        posts = []
-        for post_id in post_ids:
-            posts.append(Post(db_posts.get_post(post_id)))
-        return posts
-
-
-def posts_by_author(author, page_id):
-    post_ids = db_posts.posts_by_author(author, page_id)
-    if post_ids is not None:
-        posts = []
-        for post_id in post_ids:
-            posts.append(Post(db_posts.get_post(post_id)))
-        return posts
-        
-
-
-

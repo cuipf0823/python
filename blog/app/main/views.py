@@ -6,20 +6,14 @@ from flask_login import login_required
 from flask_login import current_user
 from . import main
 from ..models import get_user_by_name, update_frofile, update_admin_profile
-from ..models import get_user_by_id, Post, Permission
-from ..models import publish_post, posts_by_page, posts_by_author
-from .forms import EditProfileForm, EditProfileFormAdmin, PostForm
+from ..models import get_user_by_id
+from .forms import EditProfileForm, EditProfileFormAdmin
 from ..decorators import admin_required
 
 
-@main.route('/', methods=['GET', 'POST'])
+@main.route('/')
 def index():
-    form = PostForm()
-    if current_user.can(Permission.WRITE_ARTICLES) and form.validate_on_submit():
-        publish_post(form.title.data, current_user.username, form.body.data, '')
-        return redirect(url_for('.index'))
-    posts = posts_by_page(1)
-    return render_template('index.html', form=form, posts=posts, permission=Permission)
+    return render_template('index.html')
 
 
 @main.route('/user/<username>')
@@ -27,8 +21,7 @@ def user(username):
     user_info = get_user_by_name(username)
     if user_info is None:
         abort(404)
-    posts = posts_by_author(username, 1)
-    return render_template('user.html', user=user_info, posts=posts)
+    return render_template('user.html', user=user_info)
 
 
 @main.route('/edit-profile', methods=['GET', 'POST'])

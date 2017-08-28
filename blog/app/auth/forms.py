@@ -16,7 +16,7 @@ from ..models import is_name_register
 
 
 class LoginForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Length(1, 128), Email()])
+    email = StringField('Account', validators=[DataRequired(), Length(1, 128), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     rem_me = BooleanField('Keep me logged in')
     submit = SubmitField('Log In')

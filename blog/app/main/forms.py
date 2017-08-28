@@ -55,30 +55,3 @@ class EditProfileFormAdmin(FlaskForm):
     def validate_username(self, field):
         if field.data != self.user.username and is_name_register(field.data):
             raise ValidationError('Username already registered.')
-
-
-class PostForm(FlaskForm):
-    title = StringField('Title: ')
-    body = TextAreaField("What's on your mind?", validators=[DataRequired()])
-    submit = SubmitField('Submit')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
