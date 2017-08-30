@@ -21,7 +21,7 @@ class User(UserMixin):
             url = 'https://secure.gravatar.com/avatar'
         else:
             url = 'http://www.gravatar.com/avatar'
-        vhash = hashlib.md5(self.email.encode('utf-8')).hexdigest()
+        vhash = hashlib.md5(self.username.encode('utf-8')).hexdigest()
         return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
             url=url, hash=vhash, size=size, default=default, rating=rating)
 
