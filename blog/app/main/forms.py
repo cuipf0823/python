@@ -11,9 +11,6 @@ from wtforms.validators import DataRequired
 from wtforms.validators import Length
 from wtforms.validators import Email
 from wtforms.validators import Regexp
-from ..models import Role
-from ..models import is_email_register
-from ..models import is_name_register
 
 
 class NameForm(FlaskForm):

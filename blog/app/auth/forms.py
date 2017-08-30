@@ -11,12 +11,13 @@ from wtforms.validators import DataRequired
 from wtforms.validators import Length
 from wtforms.validators import Email
 from wtforms.validators import Regexp, EqualTo
-from ..models import is_email_register
-from ..models import is_name_register
 
 
 class LoginForm(FlaskForm):
-    email = StringField('Account', validators=[DataRequired(), Length(1, 128), Email()])
+    username = StringField('Account', validators=[DataRequired(), Length(1, 64), Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
+                                                                                        'Username must hava only ' 
+                                                                                        'letters, numbers, '
+                                                                                        'dots or underscores')])
     password = PasswordField('Password', validators=[DataRequired()])
     rem_me = BooleanField('Keep me logged in')
     submit = SubmitField('Log In')

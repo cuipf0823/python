@@ -11,24 +11,25 @@ from flask_login import logout_user
 from flask_login import login_required
 from flask_login import current_user
 from . import auth
-from ..models import get_user, register_user, change_password
+from ..models import login_gm, User, UserManager
 from .forms import LoginForm
 from .forms import RegistrationForm
 from .forms import ChangePwdForm
 from .forms import PasswordResetForm
 from .forms import PasswordResetRequestForm
-from ..email import send_mail
 
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        user = get_user(form.email.data)
-        if user is not None and user.verify_password(form.password.data):
-            login_user(user, form.rem_me.data)
+        status_code, ret = login_gm(form.username.data, form.password.data)
+        if status_code is 0:
+            UserManager.append(User(ret))
+            UserManager.print()
+            login_user(User(ret), form.rem_me.data)
             return redirect(request.args.get('next') or url_for('main.index'))
-        flash('Invalid username or password!')
+        flash('login gm server failed {0}:{1}'.format(status_code, ret), 'error')
     return render_template('auth/login.html', form=form)
 
 
@@ -36,18 +37,6 @@ def login():
 def logout():
     logout_user()
     flash('You have been logged out!')
-    return redirect(url_for('main.index'))
-
-
-@auth.route('/confirm/<token>')
-@login_required
-def confirm(token):
-    if current_user.confirmed:
-        return redirect(url_for('main.index'))
-    if current_user.confirm(token):
-        flash('You have confirmed your account, Thanks')
-    else:
-        flash('The confirmation link is invalid or has expired.')
     return redirect(url_for('main.index'))
 
 
@@ -61,22 +50,6 @@ def before_request():
         current_user.ping()
         if not current_user.confirmed and request.endpoint[:5] != 'auth.' and request.endpoint != 'static':
             return redirect(url_for('auth.unconfirmed'))
-
-
-@auth.route('/unconfirmed')
-def unconfirmed():
-    if current_user.is_anonymous or current_user.confirmed:
-        return redirect(url_for('main.index'))
-    return render_template('auth/unconfirmed.html')
-
-
-@auth.route('/confirm')
-@login_required
-def resend_confirmation():
-    token = current_user.generate_confirmation_token()
-    send_mail(current_user.email, 'Confirm Your Account', 'auth/email/confirm', user=current_user, token=token)
-    flash('A new confirmation email has been sent to you by email.')
-    return redirect(url_for('main.index'))
 
 
 

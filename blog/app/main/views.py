@@ -5,10 +5,8 @@ from flask import redirect, url_for, flash, abort
 from flask_login import login_required
 from flask_login import current_user
 from . import main
-from ..models import get_user_by_name, update_frofile, update_admin_profile
-from ..models import get_user_by_id
 from .forms import EditProfileForm, EditProfileFormAdmin
-from ..decorators import admin_required
+# from ..decorators import admin_required
 
 
 @main.route('/')
@@ -41,7 +39,7 @@ def edit_profile():
     form.about_me.data = current_user.about_me
     return render_template('edit_profile.html', form=form)
 
-
+'''
 @main.route('/edit-profile/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -65,3 +63,4 @@ def edit_profile_admin(user_id):
     form.location.data = edit_user.location
     form.about_me.data = edit_user.about_me
     return render_template('edit_profile.html', form=form, user=edit_user)
+'''
