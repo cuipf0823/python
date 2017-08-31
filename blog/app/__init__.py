@@ -10,35 +10,17 @@ from config import config
 import sys
 import logging
 import time
-import socket
-
+from .tcp_con import TcpConnection
 
 bootstrap = Bootstrap()
 moment = Moment()
-
-
 login_manager = LoginManager()
 # 防止会话被篡改，设置为strong，会记录客户端的IP和浏览器的用户代理信息
 login_manager.session_protection = 'strong'
 # 设置登录页面的端点
 login_manager.login_view = 'auth.login'
-# 与后台GM Server连接
-tcp_sock = None
 
-
-def tcp_connect(ip, port):
-    address = (ip, port)
-    while True:
-        try:
-            sock = socket.socket()
-            sock.connect(address)
-        except socket.error as err:
-            logging.error('Connect ip:{0}:port:{0} failed {0}...Try reconnect.'.format(ip, port, err))
-            time.sleep(2)
-            continue
-        break
-    logging.info('Connect GM Server successfully!')
-    return sock
+tcp_connect = None
 
 
 def create_app(config_name):
@@ -53,8 +35,9 @@ def create_app(config_name):
     logging.basicConfig(level=logging.DEBUG, stream=sys.stdout,
                         format='%(asctime)s %(levelname)-8s %(message)s --%(filename)s:%(lineno)-4d')
 
-    global tcp_sock
-    tcp_sock = tcp_connect(config[config_name].GM_SERVER_IP, config[config_name].GM_SERVER_PORT)
+    global tcp_connect
+    tcp_connect = TcpConnection(config[config_name].GM_SERVER_IP, config[config_name].GM_SERVER_PORT)
+
     # 注册蓝图
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)

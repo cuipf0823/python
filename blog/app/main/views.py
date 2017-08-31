@@ -5,8 +5,6 @@ from flask import redirect, url_for, flash, abort
 from flask_login import login_required
 from flask_login import current_user
 from . import main
-from .forms import EditProfileForm, EditProfileFormAdmin
-# from ..decorators import admin_required
 
 
 @main.route('/')
@@ -38,29 +36,3 @@ def edit_profile():
     form.location.data = current_user.location
     form.about_me.data = current_user.about_me
     return render_template('edit_profile.html', form=form)
-
-'''
-@main.route('/edit-profile/<int:user_id>', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def edit_profile_admin(user_id):
-    edit_user = get_user_by_id(user_id)
-    form = EditProfileFormAdmin(user=edit_user)
-    if form.validate_on_submit():
-        edit_user.username = form.username.data
-        edit_user.email = form.email.data
-        edit_user.confirmed = (1 if form.confirmed.data else 0)
-        edit_user.location = form.location.data
-        edit_user.about_me = form.about_me.data
-        edit_user.role_id = form.role.data
-        update_admin_profile(user_id, edit_user)
-        flash('The profile has been updated !')
-        return redirect(url_for('.user', username=edit_user.username))
-    form.username.data = edit_user.username
-    form.email.data = edit_user.email
-    form.confirmed.data = edit_user.confirmed
-    form.role.data = edit_user.role_id
-    form.location.data = edit_user.location
-    form.about_me.data = edit_user.about_me
-    return render_template('edit_profile.html', form=form, user=edit_user)
-'''

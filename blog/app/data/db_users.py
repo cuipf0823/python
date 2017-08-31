@@ -1,13 +1,13 @@
 # !/usr/bin/python
 # coding=utf-8
 
-from . import tcp_con
-from . import proto_codec
-from ..proto import cs_basic_pb2 as pb_basic
-from ..proto import gm_pb2
-from ..proto import error_code_pb2 as pb_error
 import hashlib
 import logging
+from . import proto_codec
+from ..proto import cs_basic_pb2 as pb_basic
+from ..proto import error_code_pb2 as pb_error
+from ..proto import gm_pb2
+from .. import tcp_connect
 
 msg_seq = 0
 gateway_session = 0
@@ -15,16 +15,17 @@ gid = 0
 
 ERRCODE = {
         0: 'mail config parse successful',
-        10000: 'socket receive data failed',
-        10001: 'mail title is empty or beyond max len 64',
-        10002: 'mail content is empty or beyond max len 1024',
-        10003: 'mail sender is empty or beyond max len 32',
-        10004: 'mail vaild time config error',
-        10005: 'mail is destory flag config error',
-        10006: 'mail priority flag config error',
-        10007: 'mail is popping flag config error',
-        10008: 'mail receiver info config error',
-        10009: 'mail delayed time config error'
+        10000: 'Connect gm server failed',
+        10001: 'socket receive data failed',
+        20001: 'mail title is empty or beyond max len 64',
+        20002: 'mail content is empty or beyond max len 1024',
+        20003: 'mail sender is empty or beyond max len 32',
+        20004: 'mail vaild time config error',
+        20005: 'mail is destory flag config error',
+        20006: 'mail priority flag config error',
+        20007: 'mail is popping flag config error',
+        20008: 'mail receiver info config error',
+        20009: 'mail delayed time config error'
     }
 
 
@@ -52,20 +53,24 @@ def login_req(name, pwd, random_bytes):
     req.random_bytes = random_bytes
     md5 = hashlib.md5((name + pwd + random_bytes.decode()).encode('utf-8'))
     req.encrypt_bytes = md5.hexdigest().encode('utf-8')
-    tcp_con.send(encode(header, req))
+    tcp_connect.send(encode(header, req))
 
 
 def login_gm(name, pwd):
+    statu_code = 0
+    # 连接gm 服务器
+    if not tcp_connect.connect():
+        statu_code = 10000
+        return statu_code, ERRCODE.get(statu_code)
     req = gm_pb2.GMCheckSessionReq()
     header = make_header(req.DESCRIPTOR.full_name)
     header.gateway_session = 0
     req.name = name.encode('utf-8')
-    tcp_con.send(encode(header, req))
-    data = tcp_con.recv()
+    tcp_connect.send(encode(header, req))
+    data = tcp_connect.recv()
     user_info = {'name': name, 'pwd': pwd}
-    statu_code = 0
     if not data:
-        statu_code = 1000
+        statu_code = 10001
         logging.error('receive gm server response message faild !')
         return statu_code, ERRCODE.get(statu_code)
     header, body = proto_codec.BaseCodec.decode(data)
@@ -78,9 +83,9 @@ def login_gm(name, pwd):
     user_info.setdefault('gateway_session', header.gateway_session)
     logging.debug('user {0} check session successfully random bytes {1}'.format(name, body.random_bytes))
     login_req(name, pwd, body.random_bytes)
-    data = tcp_con.recv()
+    data = tcp_connect.recv()
     if not data:
-        statu_code = 1000
+        statu_code = 10001
         logging.error('receive gm server response message faild !')
         return statu_code, ERRCODE.get(statu_code)
     header, rsp = proto_codec.BaseCodec.decode(data)

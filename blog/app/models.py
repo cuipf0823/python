@@ -1,7 +1,7 @@
 # !/usr/bin/python
 # coding=utf-8
 from datetime import datetime
-from flask import current_app, request
+from flask import request
 from flask_login import UserMixin
 from .data import db_users
 from . import login_manager
@@ -11,10 +11,11 @@ import logging
 
 class User(UserMixin):
     def __init__(self, dicts):
-        self._id = dicts.get('id', 1)
-        self._username = dicts.get('name')
-        self._password = dicts.get('pwd')
-        self._gateway_session = dicts.get('gateway_session')
+        self.__id = dicts.get('id', 1)
+        self.__username = dicts.get('name')
+        self.__password = dicts.get('pwd')
+        self.__gateway_session = dicts.get('gateway_session')
+        self.__login_time = datetime.strptime(str(datetime.utcnow()), '%Y-%m-%d %H:%M:%S.%f')
 
     def gravatar(self, size=100, default='identicon', rating='g'):
         if request.is_secure:
@@ -27,27 +28,27 @@ class User(UserMixin):
 
     @property
     def id(self):
-        return self._id
+        return self.__id
 
     @id.setter
     def id(self, value):
-        self._id = value
+        self.__id = value
 
     @property
     def username(self):
-        return self._username
+        return self.__username
 
     @username.setter
     def username(self, value):
-        self._username = value
+        self.__username = value
 
     @property
     def gateway_session(self):
-        return self._gateway_session
+        return self.__gateway_session
 
     @gateway_session.setter
     def gateway_session(self, value):
-        self._gateway_session = value
+        self.__gateway_session = value
 
     @property
     def is_authenticated(self):
@@ -62,7 +63,7 @@ class User(UserMixin):
         return False
 
     def __str__(self):
-        return '(user_id: {0._id}, user_name: {0._username}, gateway_session: {0._gateway_session})'.format(self)
+        return '(user_id: {0.__id}, user_name: {0.__username}, gateway_session: {0.__gateway_session})'.format(self)
 
 
 class UserManager:

@@ -2,11 +2,12 @@
 #  -*- coding: utf-8 -*-
 
 import hashlib
+
+from blog.app import tcp_con
+from . import common
+from . import proto_codec as codec
 from ..proto import cs_basic_pb2 as pb_basic
 from ..proto import gm_pb2 as pb_gm
-from . import proto_codec as codec
-from . import common
-from . import tcp_con
 
 msg_seq = 0
 
