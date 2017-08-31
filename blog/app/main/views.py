@@ -5,6 +5,7 @@ from flask import redirect, url_for, flash, abort
 from flask_login import login_required
 from flask_login import current_user
 from . import main
+from ..models import UserManager
 
 
 @main.route('/')
@@ -12,27 +13,9 @@ def index():
     return render_template('index.html')
 
 
-@main.route('/user/<username>')
-def user(username):
-    user_info = get_user_by_name(username)
+@main.route('/user/<user_id>')
+def user(user_id):
+    user_info = UserManager.get_user_by_id(int(user_id))
     if user_info is None:
         abort(404)
     return render_template('user.html', user=user_info)
-
-
-@main.route('/edit-profile', methods=['GET', 'POST'])
-@login_required
-def edit_profile():
-    form = EditProfileForm()
-    if form.validate_on_submit():
-        current_user.username = form.name.data
-        current_user.location = form.location.data
-        current_user.about_me = form.about_me.data
-        # 更新数据库
-        update_frofile(current_user.id, current_user.username, current_user.location, current_user.about_me)
-        flash('Your profile has been updated.')
-        return redirect(url_for('.user', username=current_user.username))
-    form.name.data = current_user.username
-    form.location.data = current_user.location
-    form.about_me.data = current_user.about_me
-    return render_template('edit_profile.html', form=form)

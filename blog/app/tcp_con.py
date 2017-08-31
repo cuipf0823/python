@@ -38,7 +38,7 @@ class TcpConnection(object):
             logging.info('Connect gm server already sock id:{}'.format(self.sock_id))
             return False
         count = 0
-        while count <= 3:
+        while count < 3:
             try:
                 self.__sock = socket.socket()
                 self.__sock.connect(address)
@@ -50,10 +50,10 @@ class TcpConnection(object):
                     self.__ip, self.__port, err, count))
                 continue
             break
-        if self.sock_id > 0 and count < 3:
-            logging.info('Connect GM Server successfully!')
-            return True
-        return False
+        if self.__sock is None or count >= 3:
+            return False
+        logging.info('Connect GM Server successfully!')
+        return True
 
     def select(self, time_out):
         """

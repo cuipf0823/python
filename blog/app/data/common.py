@@ -1,41 +1,64 @@
 ﻿# !/usr/bin/python
 # coding=utf-8
-from . import config
-from . import color_cmd
+from ..proto import cs_basic_pb2 as pb_basic
+from . import proto_codec
 
 
-gateway_session = 0
-# 登陆成功之后服务器返回
-gid = 0
-# 登陆GM服务的用户名 密码
-login_name = ''
-login_pwd = ''
-
-# 是否打印到文件中
-output = False
-
-# 程序是否初始化完成
-is_init = False
-
-# 当前服务器全部online列表
-# online_ids
-servers_list = []
-
-
-def write_log(context):
+class StatusCode:
     """
-    context打印到文件，用于结果输出到文件
-    :param context: 需要打印的内容
-    :return:
+    handle event status code
     """
-    pf = None
-    try:
-        pf = open(config.gm_output_path(), 'ab')
-    except IOError as err:
-        color_cmd.printred('open file %s failed %s!\n' % (config.gm_output_path(), err))
-    if pf:
-        pf.write(context)
-    pf.close()
+    SUCCESS = 0
+    CONNECT_GM_FAILED = 10000
+    SOCK_RECEIVE_ERROR = 10001
+    status_code_desc = {
+        0: 'mail config parse successful',
+        10000: 'Connect gm server failed',
+        10001: 'socket receive data failed'
+    }
+
+    @classmethod
+    def status_desc(cls, status_code):
+        return cls.status_code_desc.get(status_code, 'status code error, can not find!')
+
+    @classmethod
+    def status_and_desc(cls, status_code):
+        return status_code, cls.status_code_desc.get(status_code, 'status code error, can not find!')
 
 
+class Interact:
+    """
+    manager variables, method that interact with the gm server
+    """
+    # message sequence number
+    msg_seq = 0
+    # user session
+    session = 0
+    # user ID assigned by gm server(maybe not user)
+    gid = 0
 
+    @classmethod
+    def seq_num(cls):
+        """
+        generate message sequence number
+        """
+        cls.msg_seq += 1
+        return cls.msg_seq
+
+    @classmethod
+    def make_header(cls, msg_name):
+        """
+        makeup message header
+        """
+        header = pb_basic.CSMessageHeader()
+        header.msg_name = msg_name.encode('utf-8')
+        header.seq_num = cls.seq_num()
+        header.gateway_session = cls.session
+        return header
+
+    @staticmethod
+    def encode(header, body):
+        """
+        message header and body encode package
+        """
+        return proto_codec.BaseCodec.encode(header, body)

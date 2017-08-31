@@ -3,10 +3,13 @@
 from datetime import datetime
 from flask import request
 from flask_login import UserMixin
-from .data import db_users
+from .data import login
 from . import login_manager
 import hashlib
 import logging
+
+# maximum number of articles per page
+POST_NUM_PAGE = 10
 
 
 class User(UserMixin):
@@ -51,6 +54,10 @@ class User(UserMixin):
         self.__gateway_session = value
 
     @property
+    def login_time(self):
+        return self.__login_time
+
+    @property
     def is_authenticated(self):
         return True
 
@@ -86,12 +93,104 @@ class UserManager:
             logging.debug(value)
 
 
+class Pagination:
+    def __init__(self, page, items, total, per_page=POST_NUM_PAGE):
+        # the current page number
+        self._page = page
+        # the number of items to be displayed on a page
+        self._per_page = per_page
+        # the total number
+        self._total = total
+        # the items for the current page
+        self._items = items
+        # the total number of pages
+        if self._per_page == 0:
+            self._pages = 0
+        else:
+            self._pages = int(math.ceil(self._total / float(self._per_page)))
+
+    @property
+    def page(self):
+        return self._page
+
+    @property
+    def pages(self):
+        return self._pages
+
+    @property
+    def total(self):
+        return self._total
+
+    @property
+    def items(self):
+        return self._items
+
+    @property
+    def pre_page(self):
+        return self._per_page
+
+    @property
+    def has_prev(self):
+        """
+         return True if a previous page exists
+        """
+        return self._page > 1
+
+    @property
+    def has_next(self):
+        """
+         return True if a next page exists
+        """
+        return self._pages > self._page
+
+    @property
+    def pre_num(self):
+        """
+         number of the previous page.
+        """
+        if self.has_prev:
+            return self._page - 1
+
+    @property
+    def next_num(self):
+        """
+         number of the next page
+        """
+        if self.has_next:
+            return self._page + 1
+
+    def next(self):
+        """
+        return a class Ragination
+        """
+        assert self.has_next, 'must be has next'
+        return Pagination(self.next_num, posts_by_page(self.next_num), self.total)
+
+    def prev(self):
+        """
+        return a class Ragination
+        """
+        assert self.has_prev, 'must be has prev'
+        return Pagination(self.pre_num, posts_by_page(self.pre_num), self.total)
+
+    def iter_pages(self, left_edge=2, left_current=2, right_current=5, right_edge=2):
+        last = 0
+        for num in range(1, self.pages + 1):
+            if num <= left_edge or \
+                    (self._page - left_current - 1 < num < self._page + right_current) or \
+                    (num > self._pages - right_edge):
+                if last + 1 != num:
+                    yield None
+                yield num
+                last = num
+
+
 def login_gm(name, pwd):
     """
      login success return statu_code = 0 and User
      login faild return statu_code = error_code and error describe
     """
-    return db_users.login_gm(name, pwd)
+    return login.login_gm(name, pwd)
 
 
 @login_manager.user_loader
