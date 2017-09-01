@@ -15,12 +15,12 @@
                     {% endif %}
                     <br>
                     {% if user.gateway_session %}
-                        gateway_session: {{ user.gateway_session }}
+                        Session: {{ user.gateway_session }}
                     {% endif %}
                 </p>
             {% endif %}
             <p>
-                Login time {{ moment(user.login_time).format('YYYY-M-D, h:mm:ss') }}.
+                Login time: {{ moment(user.login_time).format('YYYY-M-D h:mm:ss') }}
             </p>
         </div>
     </div>

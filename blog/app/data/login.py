@@ -36,7 +36,7 @@ def login_gm(name, pwd):
     if not data:
         logging.error('receive gm server response message faild !')
         return StatusCode.status_and_desc(StatusCode.SOCK_RECEIVE_ERROR)
-    header, body = proto_codec.BaseCodec.decode(data)
+    header, body = Interact.decode(data)
     if header.errcode != 0:
         logging.error('user {0} send {1} to gm server error {2}!'.format(name, req.DESCRIPTOR.full_name,
                                                                          header.errcode))
@@ -49,7 +49,7 @@ def login_gm(name, pwd):
     if not data:
         logging.error('receive gm server response message faild !')
         return StatusCode.status_and_desc(StatusCode.SOCK_RECEIVE_ERROR)
-    header, rsp = proto_codec.BaseCodec.decode(data)
+    header, rsp = Interact.decode(data)
     if header.errcode != 0:
         logging.error('user {0} send CSLoginReq to gm server error {1}!'.format(name, header.errcode))
         return header.errcode, pb_error.GMErrorCode.Name(header.errcode)

@@ -7,6 +7,7 @@ from .data import login
 from . import login_manager
 import hashlib
 import logging
+import math
 
 # maximum number of articles per page
 POST_NUM_PAGE = 10

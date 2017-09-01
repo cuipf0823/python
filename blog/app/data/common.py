@@ -1,7 +1,7 @@
 ﻿# !/usr/bin/python
 # coding=utf-8
 from ..proto import cs_basic_pb2 as pb_basic
-from . import proto_codec
+from . import codec
 
 
 class StatusCode:
@@ -61,4 +61,8 @@ class Interact:
         """
         message header and body encode package
         """
-        return proto_codec.BaseCodec.encode(header, body)
+        return codec.BaseCodec.encode(header, body)
+
+    @staticmethod
+    def decode(data):
+        return codec.BaseCodec.decode(data)

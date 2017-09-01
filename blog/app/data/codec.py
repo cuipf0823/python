@@ -3,7 +3,6 @@
 import struct
 from google.protobuf import reflection
 from ..proto import cs_basic_pb2 as basic_pb
-from ..proto import error_code_pb2 as error_pb
 from ..proto import gm_pb2 as gm_pb
 
 # 协议头部表示长度字节数
