@@ -15,11 +15,11 @@
                 </ul>
             </div>
             <div class="col-sm-9">
-            <h1 class="page-header">Request & Response</h1>
+            <h1 class="page-header">Response:</h1>
                 <div class="row placeholders">
-                    {% if request and response%}
+                    {% if response %}
                         <div class="query">
-                            {{ macros.query(request, response) }}
+                            {{ macros.query(response) }}
                         </div>
                     {% endif %}
                 </div>

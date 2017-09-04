@@ -3,29 +3,88 @@
 
 from .common import *
 from ..proto import gm_pb2
+from ..proto import error_code_pb2 as pb_error
 from .. import tcp_connect
+import logging
+
+
+class QueryRet:
+    status_code = 0
+    request = None
+    response = None
+
+    def __init__(self, status_code, req, rsp):
+        self.status_code = status_code
+        self.request = req
+        self.response = rsp
 
 
 def list_server():
     req = gm_pb2.GMGetAllServerListReq()
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     tcp_connect.send(Interact.encode(header, req))
+    data = tcp_connect.recv()
+    if not data:
+        logging.error('receive gm server response message faild !')
+        return QueryRet(StatusCode.SOCK_RECEIVE_ERROR, req, StatusCode.status_desc(StatusCode.SOCK_RECEIVE_ERROR))
+    header, rsp = Interact.decode(data)
+    if header.errcode != 0:
+        err_desc = 'send msg {0} to gm server error {1}:{2}!'.format(req.DESCRIPTOR.full_name, header.errcode,
+                                                                     pb_error.GMErrorCode.Name(header.errcode))
+        logging.error(err_desc)
+        return QueryRet(header.errcode, req, err_desc)
+    return QueryRet(StatusCode.SUCCESS, req, rsp)
 
 
-def register_num(server_id=0):
+def register_num():
     req = gm_pb2.GMGetServerRegisterNumberReq()
     header = Interact.make_header(req.DESCRIPTOR.full_name)
-    if server_id != 0:
-        req.server_ids.append(server_id)
     tcp_connect.send(Interact.encode(header, req))
+    data = tcp_connect.recv()
+    if not data:
+        logging.error('receive gm server response message faild !')
+        return QueryRet(StatusCode.SOCK_RECEIVE_ERROR, req, StatusCode.status_desc(StatusCode.SOCK_RECEIVE_ERROR))
+    header, rsp = Interact.encode(data)
+    if header.errcode != 0:
+        err_desc = 'send msg {0} to gm server error {1}:{2}!'.format(req.DESCRIPTOR.full_name, header.errcode,
+                                                                     pb_error.GMErrorCode.Name(header.errcode))
+        logging.error(err_desc)
+        return QueryRet(header.errcode, req, err_desc)
+    return QueryRet(StatusCode.SUCCESS, req, rsp)
 
 
-def online_status(server_id=0):
+def online_status():
     req = gm_pb2.GMGetOnlineInSwitchReq()
     header = Interact.make_header(req.DESCRIPTOR.full_name)
-    if server_id != 0:
-        req.server_ids.append(server_id)
     tcp_connect.send(Interact.encode(header, req))
+    data = tcp_connect.recv()
+    if not data:
+        logging.error('receive gm server response message faild !')
+        return QueryRet(StatusCode.SOCK_RECEIVE_ERROR, req, StatusCode.status_desc(StatusCode.SOCK_RECEIVE_ERROR))
+    header, rsp = Interact.encode(data)
+    if header.errcode != 0:
+        err_desc = 'send msg {0} to gm server error {1}:{2}!'.format(req.DESCRIPTOR.full_name, header.errcode,
+                                                                     pb_error.GMErrorCode.Name(header.errcode))
+        logging.error(err_desc)
+        return QueryRet(header.errcode, req, err_desc)
+    return QueryRet(StatusCode.SUCCESS, req, rsp)
+
+
+def tunnel():
+    req = gm_pb2.GMGetTunnelServerInfoReq()
+    header = Interact.make_header(req.DESCRIPTOR.full_name)
+    tcp_connect.send(Interact.encode(header, req))
+    data = tcp_connect.recv()
+    if not data:
+        logging.error('receive gm server response message faild !')
+        return QueryRet(StatusCode.SOCK_RECEIVE_ERROR, req, StatusCode.status_desc(StatusCode.SOCK_RECEIVE_ERROR))
+    header, rsp = Interact.encode(data)
+    if header.errcode != 0:
+        err_desc = 'send msg {0} to gm server error {1}:{2}!'.format(req.DESCRIPTOR.full_name, header.errcode,
+                                                                     pb_error.GMErrorCode.Name(header.errcode))
+        logging.error(err_desc)
+        return QueryRet(header.errcode, req, err_desc)
+    return QueryRet(StatusCode.SUCCESS, req, rsp)
 
 
 def query_user(uid, channel=0):
@@ -33,12 +92,6 @@ def query_user(uid, channel=0):
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     req.players.uid = uid
     req.players.channel = channel
-    tcp_connect.send(Interact.encode(header, req))
-
-@staticmethod
-def tunnel():
-    req = gm_pb2.GMGetTunnelServerInfoReq()
-    header = Interact.make_header(req.DESCRIPTOR.full_name)
     tcp_connect.send(Interact.encode(header, req))
 
 
@@ -72,9 +125,6 @@ def user_detail(uid, channel=0):
     req.uid = uid
     req.channel = channel
     tcp_connect.send(Interact.encode(header, req))
-
-
-
 
 
 def push(msg, server_ids):

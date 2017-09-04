@@ -1,8 +1,7 @@
-{% macro query(req, rsp) %}
+{% macro query(rsp) %}
 <ul class="query">
     <div class="req_and_rsp">
-        <p>{% if req %} <h2>Require:</h2> <hr/> {{ req }} {% endif %} </p>
-        <p> {% if rsp %} <h2>Response:</h2> <hr/> {{ rsp }} {% endif %} </p>
+        <p> {% if rsp %} {{ rsp|replace('\n', '<br/>') }} {% endif %} </p>
     </div>
 </ul>
 {% endmacro %}

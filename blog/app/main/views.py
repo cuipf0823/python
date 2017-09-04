@@ -27,4 +27,8 @@ def user(user_id):
 @main.route('/query/<opt>')
 def query(opt):
     logging.debug('query {} from gm server'.format(opt))
-    return render_template('index.html', operations=operations.Operations.operations(), request='req', response='rsp')
+    ret = operations.Operations.callback(opt)
+    print(type(ret.response))
+    print(ret.response)
+    print(str(ret.response))
+    return render_template('index.html', operations=operations.Operations.operations(), response=str(ret.response))

@@ -12,7 +12,7 @@ class StatusCode:
     CONNECT_GM_FAILED = 10000
     SOCK_RECEIVE_ERROR = 10001
     status_code_desc = {
-        0: 'mail config parse successful',
+        0: 'successful',
         10000: 'Connect gm server failed',
         10001: 'socket receive data failed'
     }
