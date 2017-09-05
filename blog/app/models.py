@@ -7,6 +7,7 @@ from .data import login
 from . import login_manager
 import hashlib
 import logging
+import time
 
 # maximum number of articles per page
 POST_NUM_PAGE = 10
@@ -110,4 +111,23 @@ def load_user(user_id):
     return UserManager.get_user_by_id(int(user_id))
 
 
+class OnlineServers:
+    servers = None
+    # 最后更新时间
+    last_time = 0
+
+    @classmethod
+    def update(cls, servers):
+        cls.servers = servers
+        cls.last_time = time.time()
+
+
+class OnlineRooms:
+    rooms = {}
+    last_time = 0
+
+
+class OnlinePlayer:
+    players = {}
+    last_time = 0
 

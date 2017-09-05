@@ -1,7 +1,7 @@
 {% macro query(rsp) %}
 <ul class="query">
     <div class="req_and_rsp">
-        <p> {% if rsp %} {{ rsp|replace('\n', '<br/>') }} {% endif %} </p>
+        <p> {% if rsp %} <code>{{ rsp|replace('\n', '<br/>')|safe }}</code> {% endif %} </p>
     </div>
 </ul>
 {% endmacro %}

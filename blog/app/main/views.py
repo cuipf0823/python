@@ -6,6 +6,7 @@ from flask_login import current_user
 from . import main
 from ..models import UserManager
 from ..data import operations
+from .forms import PlayerForm, ServerForm
 import logging
 
 
@@ -24,11 +25,31 @@ def user(user_id):
     return render_template('user.html', user=user_info)
 
 
-@main.route('/query/<opt>')
-def query(opt):
-    logging.debug('query {} from gm server'.format(opt))
-    ret = operations.Operations.callback(opt)
-    print(type(ret.response))
-    print(ret.response)
-    print(str(ret.response))
-    return render_template('index.html', operations=operations.Operations.operations(), response=str(ret.response))
+@main.route('/query/<int:param_type>/<opt>', methods=['GET', 'POST'])
+def query(param_type, opt):
+    logging.debug('query {0} from gm server type: {1}'.format(opt, param_type))
+    if param_type == operations.CallBackType.PARAM_NONE:
+        ret = operations.Operations.callback(opt)
+        # 更新内存数据
+        operations.Operations.rsp_callback(opt, ret.response)
+        return render_template('index.html', operations=operations.Operations.operations(), response=str(ret.response))
+    elif param_type == operations.CallBackType.PARAM_UID_CHANNEL:
+        form = PlayerForm()
+        if form.validate_on_submit():
+            uid = int(form.uid.data)
+            channel = int(form.channel.data)
+            logging.debug('query {0} from gm server uid: {1}, channel: {2}'.format(opt, uid, channel))
+            ret = operations.Operations.callback(opt, uid=uid, channel=channel)
+            return render_template('index.html', operations=operations.Operations.operations(),
+                                   form=form, response=str(ret.response))
+        form.channel.data = 0
+        return render_template('index.html', operations=operations.Operations.operations(), form=form)
+    elif param_type == operations.CallBackType.PARAM_SERVER_ID:
+        form = ServerForm()
+        if form.validate_on_submit():
+            server_id = int(form.server_id.data)
+            ret = operations.Operations.callback(opt, server_id=server_id)
+            return render_template('index.html', operations=operations.Operations.operations(),
+                                   form=form, response=str(ret.response))
+        return render_template('index.html', operations=operations.Operations.operations(), form=form)
+    return render_template('index.html', operations=operations.Operations.operations())

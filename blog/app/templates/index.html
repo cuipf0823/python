@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
 {% import "_macros.html" as macros %}
 {% block title %}
     GM
@@ -10,19 +11,24 @@
                 <ul class="nav nav-sidebar">
                     <li class="active"><a>Query Operations <span class="sr-only">(current)</span></a></li>
                     {% for key, op in operations.items() %}
-                        <li><a href="{{ url_for('.query', opt=key) }}"> {{ op[0] }} </a></li>
+                        <li><a href="{{ url_for('.query', param_type = op[2], opt=key) }}"> {{ op[0] }} </a></li>
                     {% endfor %}
                 </ul>
             </div>
             <div class="col-sm-9">
-            <h1 class="page-header">Response:</h1>
-                <div class="row placeholders">
-                    {% if response %}
+                {% if form %}
+                    <div>
+                        {{ wtf.quick_form(form) }}
+                    </div>
+                {% endif %}
+                {% if response %}
+                    <h1 class="page-header">Response:</h1>
+                    <div class="row placeholders">
                         <div class="query">
                             {{ macros.query(response) }}
                         </div>
-                    {% endif %}
-                </div>
+                    </div>
+                {% endif %}
             </div>
         </div>
 {% endblock %}

@@ -5,6 +5,7 @@ from .common import *
 from ..proto import gm_pb2
 from ..proto import error_code_pb2 as pb_error
 from .. import tcp_connect
+from ..models import OnlineServers
 import logging
 
 
@@ -19,10 +20,7 @@ class QueryRet:
         self.response = rsp
 
 
-def list_server():
-    req = gm_pb2.GMGetAllServerListReq()
-    header = Interact.make_header(req.DESCRIPTOR.full_name)
-    tcp_connect.send(Interact.encode(header, req))
+def handle_response(req):
     data = tcp_connect.recv()
     if not data:
         logging.error('receive gm server response message faild !')
@@ -33,66 +31,48 @@ def list_server():
                                                                      pb_error.GMErrorCode.Name(header.errcode))
         logging.error(err_desc)
         return QueryRet(header.errcode, req, err_desc)
+    if rsp is None:
+        rsp = 'GM Server return empty!'
     return QueryRet(StatusCode.SUCCESS, req, rsp)
+
+
+# 无需参数
+def list_server():
+    req = gm_pb2.GMGetAllServerListReq()
+    header = Interact.make_header(req.DESCRIPTOR.full_name)
+    tcp_connect.send(Interact.encode(header, req))
+    return handle_response(req)
 
 
 def register_num():
     req = gm_pb2.GMGetServerRegisterNumberReq()
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     tcp_connect.send(Interact.encode(header, req))
-    data = tcp_connect.recv()
-    if not data:
-        logging.error('receive gm server response message faild !')
-        return QueryRet(StatusCode.SOCK_RECEIVE_ERROR, req, StatusCode.status_desc(StatusCode.SOCK_RECEIVE_ERROR))
-    header, rsp = Interact.encode(data)
-    if header.errcode != 0:
-        err_desc = 'send msg {0} to gm server error {1}:{2}!'.format(req.DESCRIPTOR.full_name, header.errcode,
-                                                                     pb_error.GMErrorCode.Name(header.errcode))
-        logging.error(err_desc)
-        return QueryRet(header.errcode, req, err_desc)
-    return QueryRet(StatusCode.SUCCESS, req, rsp)
+    return handle_response(req)
 
 
 def online_status():
     req = gm_pb2.GMGetOnlineInSwitchReq()
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     tcp_connect.send(Interact.encode(header, req))
-    data = tcp_connect.recv()
-    if not data:
-        logging.error('receive gm server response message faild !')
-        return QueryRet(StatusCode.SOCK_RECEIVE_ERROR, req, StatusCode.status_desc(StatusCode.SOCK_RECEIVE_ERROR))
-    header, rsp = Interact.encode(data)
-    if header.errcode != 0:
-        err_desc = 'send msg {0} to gm server error {1}:{2}!'.format(req.DESCRIPTOR.full_name, header.errcode,
-                                                                     pb_error.GMErrorCode.Name(header.errcode))
-        logging.error(err_desc)
-        return QueryRet(header.errcode, req, err_desc)
-    return QueryRet(StatusCode.SUCCESS, req, rsp)
+    return handle_response(req)
 
 
 def tunnel():
     req = gm_pb2.GMGetTunnelServerInfoReq()
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     tcp_connect.send(Interact.encode(header, req))
-    data = tcp_connect.recv()
-    if not data:
-        logging.error('receive gm server response message faild !')
-        return QueryRet(StatusCode.SOCK_RECEIVE_ERROR, req, StatusCode.status_desc(StatusCode.SOCK_RECEIVE_ERROR))
-    header, rsp = Interact.encode(data)
-    if header.errcode != 0:
-        err_desc = 'send msg {0} to gm server error {1}:{2}!'.format(req.DESCRIPTOR.full_name, header.errcode,
-                                                                     pb_error.GMErrorCode.Name(header.errcode))
-        logging.error(err_desc)
-        return QueryRet(header.errcode, req, err_desc)
-    return QueryRet(StatusCode.SUCCESS, req, rsp)
+    return handle_response(req)
 
 
-def query_user(uid, channel=0):
+# 需要uid， channel
+def query_player(uid, channel=0):
     req = gm_pb2.GMQueryUserReq()
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     req.players.uid = uid
     req.players.channel = channel
     tcp_connect.send(Interact.encode(header, req))
+    return handle_response(req)
 
 
 def query_online(uid, channel=0):
@@ -102,54 +82,25 @@ def query_online(uid, channel=0):
     info.uid = uid
     info.channel = channel
     tcp_connect.send(Interact.encode(header, req))
+    return handle_response(req)
 
 
-def query_user_info(server_id):
-    req = gm_pb2.GMQueryAllUserBaseInfoOnlineReq()
-    header = Interact.make_header(req.DESCRIPTOR.full_name)
-    req.server_id = server_id
-    tcp_connect.send(Interact.encode(header, req))
-
-
-def kick_user(uid, channel=0):
+def kick_player(uid, channel=0):
     req = gm_pb2.GMKickUserReq()
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     req.uid = uid
     req.channel = channel
     tcp_connect.send(Interact.encode(header, req))
+    return handle_response(req)
 
 
-def user_detail(uid, channel=0):
+def player_detail(uid, channel=0):
     req = gm_pb2.GMQueryOnlineUserInfoReq()
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     req.uid = uid
     req.channel = channel
     tcp_connect.send(Interact.encode(header, req))
-
-
-def push(msg, server_ids):
-    req = gm_pb2.GMPushMessageReq()
-    header = Interact.make_header(req.DESCRIPTOR.full_name)
-    req.push_message = msg
-    if len(server_ids) != 0:
-        for item in server_ids:
-            req.server_ids.append(int(item))
-    tcp_connect.send(Interact.encode(header, req))
-
-
-def all_room(server_id):
-    req = gm_pb2.GMGetAllServerRoomReq()
-    header = Interact.make_header(req.DESCRIPTOR.full_name)
-    req.server_id = server_id
-    tcp_connect.send(Interact.encode(header, req))
-
-
-def room_info(server_id, room_id):
-    req = gm_pb2.GMGetRoomInfoReq()
-    header = Interact.make_header(req.DESCRIPTOR.full_name)
-    req.server_id = server_id
-    req.room_id = room_id
-    tcp_connect.send(Interact.encode(header, req))
+    return handle_response(req)
 
 
 def craft_info(uid, channel=0):
@@ -158,6 +109,7 @@ def craft_info(uid, channel=0):
     req.uid = uid
     req.channel = channel
     tcp_connect.send(Interact.encode(header, req))
+    return handle_response(req)
 
 
 def friend_list(uid, channel=0):
@@ -166,6 +118,7 @@ def friend_list(uid, channel=0):
     req.uid = uid
     req.channel = channel
     tcp_connect.send(Interact.encode(header, req))
+    return handle_response(req)
 
 
 def black_list(uid, channel=0):
@@ -174,6 +127,7 @@ def black_list(uid, channel=0):
     req.uid = uid
     req.channel = channel
     tcp_connect.send(Interact.encode(header, req))
+    return handle_response(req)
 
 
 def push_list(uid, channel=0):
@@ -182,8 +136,33 @@ def push_list(uid, channel=0):
     req.uid = uid
     req.channel = channel
     tcp_connect.send(Interact.encode(header, req))
+    return handle_response(req)
 
 
+def query_user_info(server_id):
+    req = gm_pb2.GMQueryAllUserBaseInfoOnlineReq()
+    header = Interact.make_header(req.DESCRIPTOR.full_name)
+    req.server_id = server_id
+    tcp_connect.send(Interact.encode(header, req))
+    return handle_response(req)
+
+
+def all_room(server_id):
+    req = gm_pb2.GMGetAllServerRoomReq()
+    header = Interact.make_header(req.DESCRIPTOR.full_name)
+    req.server_id = server_id
+    tcp_connect.send(Interact.encode(header, req))
+    return handle_response(req)
+
+
+def room_info(server_id, room_id):
+    req = gm_pb2.GMGetRoomInfoReq()
+    header = Interact.make_header(req.DESCRIPTOR.full_name)
+    req.server_id = server_id
+    req.room_id = room_id
+    tcp_connect.send(Interact.encode(header, req))
+    return handle_response(req)
+'''
 def send_mail(mail_info):
     req = gm_pb2.GMSendMailReq()
     header = Interact.make_header(req.DESCRIPTOR.full_name)
@@ -233,4 +212,16 @@ def del_unsend_mail(mail_id):
     req.mail_ids.append(mail_id)
     tcp_connect.send(Interact.encode(header, req))
 
+'''
+
+
+#########################
+def handle_list_server(rsp):
+    servers = []
+    if rsp:
+        for item in rsp.server_items:
+            if item.server_type == 2:
+                servers.append(item.zone_id)
+    OnlineServers.update(servers)
+    logging.debug(OnlineServers.servers)
 
