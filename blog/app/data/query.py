@@ -162,8 +162,13 @@ def room_info(server_id, room_id):
     req.room_id = room_id
     tcp_connect.send(Interact.encode(header, req))
     return handle_response(req)
+
+
+def send_mail(**kwargs):
+    print('send mail...')
+    return
+
 '''
-def send_mail(mail_info):
     req = gm_pb2.GMSendMailReq()
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     mail = req.mail_content

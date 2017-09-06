@@ -15,11 +15,10 @@
                     {% endfor %}
                 </ul>
             </div>
-            <div class="col-sm-9">
+            <div class="col-sm-9 col-md-5">
                 {% if form %}
-                    <div>
-                        {{ wtf.quick_form(form) }}
-                    </div>
+                    {{ form.hidden_tag() }}
+                    {{ wtf.quick_form(form) }}
                 {% endif %}
                 {% if response %}
                     <h1 class="page-header">Response:</h1>

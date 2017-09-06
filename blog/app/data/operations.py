@@ -8,6 +8,7 @@ class CallBackType:
     PARAM_NONE = 0
     PARAM_UID_CHANNEL = 1
     PARAM_SERVER_ID = 2
+    PARAM_MAIL = 3
 
 
 class Operations:
@@ -25,6 +26,7 @@ class Operations:
     OPT_KICK_PLAYER = 'kick_player'
     OPT_ALL_PLAYERS = 'all_players'
     OPT_ALL_ROOMS = 'all_rooms'
+    OPT_SEND_MAIL = 'send_mail'
 
     operations_desc = OrderedDict()
     operations_rsps = OrderedDict()
@@ -43,6 +45,7 @@ class Operations:
 
     operations_desc[OPT_ALL_PLAYERS] = ('查询所有在线用户', query_user_info, CallBackType.PARAM_SERVER_ID)
     operations_desc[OPT_ALL_ROOMS] = ('查询当前所有房间', all_room, CallBackType.PARAM_SERVER_ID)
+    operations_desc[OPT_SEND_MAIL] = ('发送官方邮件', send_mail, CallBackType.PARAM_MAIL)
 
     operations_rsps[OPT_LIST_SERVER] = handle_list_server
 
