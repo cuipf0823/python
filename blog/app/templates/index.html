@@ -17,7 +17,7 @@
             </div>
             <div class="col-sm-9 col-md-5">
                 {% if form %}
-                    {{ form.hidden_tag() }}
+                    {{ form.csrf_token  }}
                     {{ wtf.quick_form(form) }}
                 {% endif %}
                 {% if response %}

@@ -3,18 +3,18 @@
 
 from flask import Flask
 from flask_bootstrap import Bootstrap
-from flask_mail import Mail
 from flask_moment import Moment
 from flask_login import LoginManager
 from config import config
+from flask_wtf import CSRFProtect
 import sys
 import logging
-import time
 from .tcp_con import TcpConnection
 
 bootstrap = Bootstrap()
 moment = Moment()
 login_manager = LoginManager()
+csrf = CSRFProtect()
 # 防止会话被篡改，设置为strong，会记录客户端的IP和浏览器的用户代理信息
 login_manager.session_protection = 'strong'
 # 设置登录页面的端点
@@ -32,9 +32,9 @@ def create_app(config_name):
     bootstrap.init_app(app)
     moment.init_app(app)
     login_manager.init_app(app)
+    csrf.init_app(app)
     logging.basicConfig(level=logging.DEBUG, stream=sys.stdout,
                         format='%(asctime)s %(levelname)-8s %(message)s --%(filename)s:%(lineno)-4d')
-
     global tcp_connect
     tcp_connect = TcpConnection(config[config_name].GM_SERVER_IP, config[config_name].GM_SERVER_PORT)
 
