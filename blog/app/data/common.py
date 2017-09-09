@@ -37,6 +37,9 @@ class Interact:
     # user ID assigned by gm server(maybe not user)
     gid = 0
 
+    def __init__(self):
+        pass
+
     @classmethod
     def seq_num(cls):
         """

@@ -1,10 +1,11 @@
 # !/usr/bin/python
 # coding=utf-8
 from flask import render_template
-from flask import redirect, url_for, abort
+from flask import redirect, url_for, abort, flash
 from flask_login import current_user
 from . import main
-from ..models import UserManager
+from ..models import UserManager, OnlineServers
+from .. import tcp_connect
 from ..data import operations
 from .forms import PlayerForm, ServerForm, MailForm
 import logging
@@ -22,7 +23,7 @@ def init_time(days=15):
 
 def calc_second(dt_time):
     # return time.mktime(time.strptime(str_time, '%Y-%m-%d %H:%M:%S')) - time.time()
-    return (dt_time - datetime.datetime.now()).total_seconds()
+    return int((dt_time - datetime.datetime.now()).total_seconds())
 
 
 @main.route('/')
@@ -62,7 +63,7 @@ def handle_query_mail(form):
     elif receive_type == 2:
         infomations = form.mail_receiver.data.get('receive_info').split(':')
         online_id = int(infomations[0])
-        uids = [int(item) for item in infomations[0].split(',')]
+        uids = [int(item) for item in infomations[1].split(',')]
         mail_info.setdefault('receive_online', online_id)
         mail_info.setdefault('receive_uids', uids)
     if not form.is_destory.data and form.attach.data:
@@ -105,12 +106,25 @@ def query(param_type, opt):
         if form.validate_on_submit():
             mail_info = handle_query_mail(form)
             logging.debug(mail_info)
-            ret = operations.Operations.callback(opt, *mail_info)
+            ret = operations.Operations.callback(opt, mail_info=mail_info)
             return render_template('index.html', operations=operations.Operations.operations(),
-                                   form=form, response=str(ret.response))
+                                   form=form, response=mail_info)
         form.sender.data = DEFAULT_MAIL_SENDER
         form.valid_time.data = init_time()
         form.delayed_time.data = init_time(days=0)
         form.mail_receiver.data.setdefault('receiver_type', 1)
         return render_template('index.html', operations=operations.Operations.operations(), form=form)
     return render_template('index.html', operations=operations.Operations.operations())
+
+
+@main.before_app_request
+def before_request():
+    """
+    print(tcp_connect.is_connect)
+    if not tcp_connect.is_connect:
+        flash('Connect GM server failed, please login again.')
+        logging.error('Connect GM server failed, please login again.')
+    if OnlineServers.last_time == 0:
+        opt = 'list'
+        operations.Operations.callback(opt)
+    """

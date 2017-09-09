@@ -13,6 +13,7 @@ from wtforms import TextAreaField
 from wtforms import ValidationError
 from wtforms.validators import DataRequired, Length, Regexp
 from ..models import OnlineServers
+import logging
 
 
 class PlayerForm(FlaskForm):
@@ -44,8 +45,23 @@ class MailReceiverForm(FlaskForm):
 
     def validate_receive_info(self, field):
         rec_type = self.receiver_type.data
+        if len(field.data) == 0:
+            raise ValidationError('receiver infomation format error.')
         if rec_type == 1:
-            if ':' in field.data:
+            try:
+                online_ids = [int(item) for item in field.data.split(',')]
+                logging.debug('validate receiver infomation receive_type:{0} online_ids:{1}'.format(
+                    rec_type, online_ids))
+            except BaseException:
+                raise ValidationError('receiver infomation format error.')
+        elif rec_type == 2:
+            try:
+                infomations = field.data.split(':')
+                online_id = int(infomations[0])
+                uids = [int(item) for item in infomations[1].split(',')]
+                logging.debug('validate receiver infomation receive_type:{0} online_id:{1} uids:{2}'.format(
+                    rec_type, online_id, uids))
+            except BaseException:
                 raise ValidationError('receiver infomation format error.')
 
 
@@ -65,4 +81,13 @@ class MailForm(FlaskForm):
                          description='邮件附件配置格式：item_id：num')
     content = TextAreaField('邮件内容：',  validators=[DataRequired(), Length(1, 1024)])
     submit = SubmitField('Send')
+
+    def validate_attach(self, field):
+        if len(field.data) != 0:
+            try:
+                attachs = [item.split(':') for item in field.data.split(',')]
+                attachments = [(int(item[0]), int(item[1])) for item in attachs]
+                logging.debug('validate mail attachments {}'.format(attachments))
+            except BaseException:
+                raise ValidationError('mail attachment format error')
 

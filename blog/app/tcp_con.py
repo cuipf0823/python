@@ -28,7 +28,7 @@ class TcpConnection(object):
 
     @property
     def is_connect(self):
-        if self.__sock.fileno() >= 0:
+        if self.__sock is not None and self.__sock.fileno() >= 0:
             return True
         return False
 

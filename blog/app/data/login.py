@@ -20,11 +20,9 @@ def login_req(name, pwd, random_bytes):
 
 def login_gm(name, pwd):
     statu_code = 0
-    '''
     # fake code
     if statu_code is 0:
         return statu_code, {'name': name, 'pwd': pwd, 'gateway_session': 123456789, 'id': 1}
-    '''
     # 连接gm 服务器
     if not tcp_connect.connect():
         return StatusCode.status_and_desc(StatusCode.CONNECT_GM_FAILED)

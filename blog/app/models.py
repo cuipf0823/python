@@ -80,6 +80,9 @@ class UserManager:
     """
     users = {}
 
+    def __init__(self):
+        pass
+
     @classmethod
     def get_user_by_id(cls, user_id):
         return cls.users.get(user_id)
@@ -89,7 +92,7 @@ class UserManager:
         return cls.users.setdefault(user.id, user)
 
     @classmethod
-    def print(cls):
+    def print_users(cls):
         for key, value in cls.users.items():
             logging.debug(value)
 
@@ -116,18 +119,14 @@ class OnlineServers:
     # 最后更新时间
     last_time = 0
 
+    def __init__(self):
+        pass
+
     @classmethod
     def update(cls, servers):
         cls.servers = servers
         cls.last_time = time.time()
 
 
-class OnlineRooms:
-    rooms = {}
-    last_time = 0
 
-
-class OnlinePlayer:
-    players = {}
-    last_time = 0
 

@@ -164,36 +164,34 @@ def room_info(server_id, room_id):
     return handle_response(req)
 
 
-def send_mail(**kwargs):
-    print('send mail...')
-    return
-
-'''
+def send_mail(mail_info):
+    logging.debug('send mail to gm server mail info: {}'.format(mail_info))
+    status = True
+    if status:
+        return
     req = gm_pb2.GMSendMailReq()
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     mail = req.mail_content
-    mail.gm_uid = common.gid
-    mail.addressee_type = mail_info.receive_type
+    mail.gm_uid = Interact.gid
+    mail.addressee_type = mail_info.get('receive_type')
     if mail_info.receive_type == 1:
-        for item in mail_info.online_ids:
-            mail.online_ids.append(item)
+        mail.online_ids = mail_info.get('receive_onlines', [])
     elif mail_info.receive_type == 2:
-        index = 0
-        for item in mail_info.uids:
-            mail.uids.append(item[0])
-            mail.channels.append(item[1])
-            index += 1
-    mail.online_ids.append(mail_info.online_id)
-    mail.sender = mail_info.sender.Interact.encode('utf-8')
-    mail.title = mail_info.title.Interact.encode('utf-8')
-    mail.content = mail_info.content.Interact.encode('utf-8')
-    mail.valid_time = mail_info.valid_time
-    mail.is_destroy = mail_info.is_destory
-    mail.show_priority = (gm_pb2.MailContent.Normal if mail_info.priority == 0
+        # 待定
+        for uid in mail_info.get('receive_uids', []):
+            mail.uids.append(uid)
+            mail.channels.append(0)
+    # mail.online_ids.append(mail_info.online_id)
+    mail.sender = mail_info.get('sender')
+    mail.title = mail_info.get('title')
+    mail.content = mail_info.get('content')
+    mail.valid_time = mail_info.get('valid_time')
+    mail.is_destroy = mail_info.get('is_destory')
+    mail.show_priority = (gm_pb2.MailContent.Normal if mail_info.get('priority')
                           else gm_pb2.MailContent.Top)
-    mail.is_popping = mail_info.is_popping
-    mail.delayed_time = mail_info.delayed_time
-    for item in mail_info.attachments:
+    mail.is_popping = mail_info.get('is_popping')
+    mail.delayed_time = mail_info.get('delayed_time')
+    for item in mail_info.get('attachments', []):
         attachment = mail.attachment_list.add()
         attachment.id = item[0]
         attachment.count = item[1]
@@ -216,8 +214,6 @@ def del_unsend_mail(mail_id):
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     req.mail_ids.append(mail_id)
     tcp_connect.send(Interact.encode(header, req))
-
-'''
 
 
 #########################
