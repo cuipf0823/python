@@ -9,6 +9,10 @@ class CallBackType:
     PARAM_UID_CHANNEL = 1
     PARAM_SERVER_ID = 2
     PARAM_MAIL = 3
+    PARAM_MAIL_ID = 4
+
+    def __init__(self):
+        pass
 
 
 class Operations:
@@ -27,6 +31,8 @@ class Operations:
     OPT_ALL_PLAYERS = 'all_players'
     OPT_ALL_ROOMS = 'all_rooms'
     OPT_SEND_MAIL = 'send_mail'
+    OPT_UNSEND_MAIL = 'unsend_mail'
+    OPT_DEL_UNSEND_MAIL = 'del_unsend_mail'
 
     operations_desc = OrderedDict()
     operations_rsps = OrderedDict()
@@ -46,8 +52,13 @@ class Operations:
     operations_desc[OPT_ALL_PLAYERS] = ('查询所有在线用户', query_user_info, CallBackType.PARAM_SERVER_ID)
     operations_desc[OPT_ALL_ROOMS] = ('查询当前所有房间', all_room, CallBackType.PARAM_SERVER_ID)
     operations_desc[OPT_SEND_MAIL] = ('发送官方邮件', send_mail, CallBackType.PARAM_MAIL)
+    operations_desc[OPT_UNSEND_MAIL] = ('获取未发送邮件', unsend_mail, CallBackType.PARAM_NONE)
+    operations_desc[OPT_DEL_UNSEND_MAIL] = ('删除未发送邮件', del_unsend_mail, CallBackType.PARAM_MAIL_ID)
 
     operations_rsps[OPT_LIST_SERVER] = handle_list_server
+
+    def __init__(self):
+        pass
 
     @classmethod
     def operations(cls):
