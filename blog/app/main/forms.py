@@ -18,7 +18,7 @@ import logging
 
 class PlayerForm(FlaskForm):
     uid = IntegerField('Player uid', validators=[DataRequired()])
-    channel = IntegerField('Player channel', validators=[DataRequired()])
+    channel = IntegerField('Player channel')
     submit = SubmitField('Submit')
 
 
@@ -45,7 +45,7 @@ class MailReceiverForm(FlaskForm):
 
     def validate_receive_info(self, field):
         rec_type = self.receiver_type.data
-        if len(field.data) == 0:
+        if rec_type >= 1 and len(field.data) == 0:
             raise ValidationError('receiver infomation format error.')
         if rec_type == 1:
             try:

@@ -108,7 +108,7 @@ def query(param_type, opt):
             logging.debug(mail_info)
             ret = operations.Operations.callback(opt, mail_info=mail_info)
             return render_template('index.html', operations=operations.Operations.operations(),
-                                   form=form, response=mail_info)
+                                   form=form, response=str(ret.response))
         form.sender.data = DEFAULT_MAIL_SENDER
         form.valid_time.data = init_time()
         form.delayed_time.data = init_time(days=0)

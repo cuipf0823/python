@@ -52,6 +52,7 @@ class TcpConnection(object):
             break
         if self.__sock is None or count >= 3:
             return False
+        self.__sock.settimeout(4.0)
         logging.info('Connect GM Server successfully!')
         return True
 
@@ -77,7 +78,10 @@ class TcpConnection(object):
         """
         all_data = ''.encode('utf-8')
         while True:
-            rec_data = self.__sock.recv(MAX_RECEIVE_BUF)
+            try:
+                rec_data = self.__sock.recv(MAX_RECEIVE_BUF)
+            except BaseException:
+                print()
             if len(rec_data) > 0:
                 all_data += rec_data
                 if len(all_data) > 4:

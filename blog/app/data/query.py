@@ -166,25 +166,26 @@ def room_info(server_id, room_id):
 
 def send_mail(mail_info):
     logging.debug('send mail to gm server mail info: {}'.format(mail_info))
+    '''
     status = True
     if status:
         return
+    '''
     req = gm_pb2.GMSendMailReq()
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     mail = req.mail_content
     mail.gm_uid = Interact.gid
     mail.addressee_type = mail_info.get('receive_type')
-    if mail_info.receive_type == 1:
+    if mail.addressee_type == 1:
         mail.online_ids = mail_info.get('receive_onlines', [])
-    elif mail_info.receive_type == 2:
-        # 待定
+    elif mail.addressee_type == 2:
         for uid in mail_info.get('receive_uids', []):
             mail.uids.append(uid)
             mail.channels.append(0)
-    # mail.online_ids.append(mail_info.online_id)
-    mail.sender = mail_info.get('sender')
-    mail.title = mail_info.get('title')
-    mail.content = mail_info.get('content')
+            mail.online_ids.append(mail_info.online_id)
+    mail.sender = mail_info.get('sender').encode('utf-8')
+    mail.title = mail_info.get('title').encode('utf-8')
+    mail.content = mail_info.get('content').encode('utf-8')
     mail.valid_time = mail_info.get('valid_time')
     mail.is_destroy = mail_info.get('is_destory')
     mail.show_priority = (gm_pb2.MailContent.Normal if mail_info.get('priority')
@@ -199,8 +200,9 @@ def send_mail(mail_info):
         mail.mail_type = 1
     else:
         mail.mail_type = 0
-    print(req)
+    logging.debug(req)
     tcp_connect.send(Interact.encode(header, req))
+    return handle_response(req)
 
 
 def unsend_mail():
