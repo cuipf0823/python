@@ -2,7 +2,7 @@
 # coding=utf-8
 from flask import render_template
 from flask import redirect, url_for, abort
-from flask_login import current_user
+from flask_login import current_user, login_required
 from . import main
 from ..models import UserManager, OnlineServers
 from .. import tcp_connect
@@ -35,6 +35,7 @@ def index():
 
 
 @main.route('/user/<user_id>')
+@login_required
 def user(user_id):
     user_info = UserManager.get_user_by_id(int(user_id))
     if user_info is None:
@@ -153,6 +154,7 @@ query_func = {operations.CallBackType.PARAM_NONE: query_param_none,
 
 
 @main.route('/query/<int:param_type>/<opt>', methods=['GET', 'POST'])
+@login_required
 def query(param_type, opt):
     logging.debug('query {0} from gm server type: {1}'.format(opt, param_type))
     func = query_func.get(param_type, None)

@@ -112,7 +112,7 @@ def load_user(user_id):
 
 
 class OnlineServers:
-    servers = None
+    servers = []
     # 最后更新时间
     last_time = 0
 
