@@ -17,6 +17,7 @@ def login():
         if status_code is 0:
             UserManager.append(User(ret))
             login_user(User(ret))
+            # ret = init_server()
             return redirect(request.args.get('next') or url_for('main.index'))
         flash('login gm server failed {0}:{1}'.format(status_code, ret), 'error')
     return render_template('auth/login.html', form=form)

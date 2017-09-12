@@ -11,10 +11,12 @@ class StatusCode:
     SUCCESS = 0
     CONNECT_GM_FAILED = 10000
     SOCK_RECEIVE_ERROR = 10001
+    SOCK_SEND_ERROR = 10002
     status_code_desc = {
         0: 'successful',
         10000: 'Connect gm server failed',
-        10001: 'socket receive data failed'
+        10001: 'Socket receive data failed',
+        10002: 'Socket send msg to gm server failed'
     }
 
     @classmethod

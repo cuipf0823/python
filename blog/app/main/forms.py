@@ -17,9 +17,25 @@ import logging
 
 
 class PlayerForm(FlaskForm):
-    uid = IntegerField('Player uid', validators=[DataRequired()])
-    channel = IntegerField('Player channel')
+    uid = IntegerField('Player uid:', validators=[DataRequired(message='uid must have only numbers.')],
+                       description='player must be online.')
+    channel = IntegerField('Player channel:')
     submit = SubmitField('Submit')
+
+
+class DelMailForm(FlaskForm):
+    mail_id = IntegerField('Delete unsend mail id:', validators=[DataRequired(message='mail id must have only numbers.')])
+    submit = SubmitField('Submit')
+
+
+class RoomInfoForm(FlaskForm):
+    server_id = SelectField('Server id:', coerce=int)
+    room_id = StringField('Room id：', validators=[Regexp('^[0-9]*$', 0, 'room id must have only numbers.')])
+    submit = SubmitField('Submit')
+
+    def __init__(self, *args, **kwargs):
+        super(RoomInfoForm, self).__init__(*args, **kwargs)
+        self.server_id.choices = [(key, key) for key in OnlineServers.servers]
 
 
 class ServerForm(FlaskForm):

@@ -9,9 +9,6 @@ import hashlib
 import logging
 import time
 
-# maximum number of articles per page
-POST_NUM_PAGE = 10
-
 
 class User(UserMixin):
     def __init__(self, dicts):
@@ -126,6 +123,8 @@ class OnlineServers:
     def update(cls, servers):
         cls.servers = servers
         cls.last_time = time.time()
+
+
 
 
 

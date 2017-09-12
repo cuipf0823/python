@@ -20,18 +20,27 @@ class QueryRet:
         self.response = rsp
 
 
-def handle_response(req):
-    data = tcp_connect.recv()
-    if not data:
-        logging.error('receive gm server response message faild !')
+def handle_response(header, req):
+    status_code = tcp_connect.send(Interact.encode(header, req))
+    if status_code != 0:
+        logging.error('send msg {} to gm server failed !'.format(req.DESCRIPTOR.full_name))
+        return QueryRet(StatusCode.SOCK_SEND_ERROR, req, StatusCode.status_desc(StatusCode.SOCK_SEND_ERROR))
+    logging.debug(header)
+    logging.debug(req)
+    status_code, data = tcp_connect.recv()
+    if status_code != 0:
+        logging.error('receive gm server response message failed !')
         return QueryRet(StatusCode.SOCK_RECEIVE_ERROR, req, StatusCode.status_desc(StatusCode.SOCK_RECEIVE_ERROR))
     header, rsp = Interact.decode(data)
+    logging.debug(header)
+    logging.debug(rsp)
     if header.errcode != 0:
         err_desc = 'send msg {0} to gm server error {1}:{2}!'.format(req.DESCRIPTOR.full_name, header.errcode,
                                                                      pb_error.GMErrorCode.Name(header.errcode))
         logging.error(err_desc)
         return QueryRet(header.errcode, req, err_desc)
-    if rsp is None:
+
+    if len(str(rsp)) == 0:
         rsp = 'GM Server return empty!'
     return QueryRet(StatusCode.SUCCESS, req, rsp)
 
@@ -40,29 +49,25 @@ def handle_response(req):
 def list_server():
     req = gm_pb2.GMGetAllServerListReq()
     header = Interact.make_header(req.DESCRIPTOR.full_name)
-    tcp_connect.send(Interact.encode(header, req))
-    return handle_response(req)
+    return handle_response(header, req)
 
 
 def register_num():
     req = gm_pb2.GMGetServerRegisterNumberReq()
     header = Interact.make_header(req.DESCRIPTOR.full_name)
-    tcp_connect.send(Interact.encode(header, req))
-    return handle_response(req)
+    return handle_response(header, req)
 
 
 def online_status():
     req = gm_pb2.GMGetOnlineInSwitchReq()
     header = Interact.make_header(req.DESCRIPTOR.full_name)
-    tcp_connect.send(Interact.encode(header, req))
-    return handle_response(req)
+    return handle_response(header, req)
 
 
 def tunnel():
     req = gm_pb2.GMGetTunnelServerInfoReq()
     header = Interact.make_header(req.DESCRIPTOR.full_name)
-    tcp_connect.send(Interact.encode(header, req))
-    return handle_response(req)
+    return handle_response(header, req)
 
 
 # 需要uid， channel
@@ -71,8 +76,7 @@ def query_player(uid, channel=0):
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     req.players.uid = uid
     req.players.channel = channel
-    tcp_connect.send(Interact.encode(header, req))
-    return handle_response(req)
+    return handle_response(header, req)
 
 
 def query_online(uid, channel=0):
@@ -81,8 +85,7 @@ def query_online(uid, channel=0):
     info = req.players.add()
     info.uid = uid
     info.channel = channel
-    tcp_connect.send(Interact.encode(header, req))
-    return handle_response(req)
+    return handle_response(header, req)
 
 
 def kick_player(uid, channel=0):
@@ -90,8 +93,7 @@ def kick_player(uid, channel=0):
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     req.uid = uid
     req.channel = channel
-    tcp_connect.send(Interact.encode(header, req))
-    return handle_response(req)
+    return handle_response(header, req)
 
 
 def player_detail(uid, channel=0):
@@ -99,8 +101,7 @@ def player_detail(uid, channel=0):
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     req.uid = uid
     req.channel = channel
-    tcp_connect.send(Interact.encode(header, req))
-    return handle_response(req)
+    return handle_response(header, req)
 
 
 def craft_info(uid, channel=0):
@@ -108,8 +109,7 @@ def craft_info(uid, channel=0):
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     req.uid = uid
     req.channel = channel
-    tcp_connect.send(Interact.encode(header, req))
-    return handle_response(req)
+    return handle_response(header, req)
 
 
 def friend_list(uid, channel=0):
@@ -117,8 +117,7 @@ def friend_list(uid, channel=0):
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     req.uid = uid
     req.channel = channel
-    tcp_connect.send(Interact.encode(header, req))
-    return handle_response(req)
+    return handle_response(header, req)
 
 
 def black_list(uid, channel=0):
@@ -126,8 +125,7 @@ def black_list(uid, channel=0):
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     req.uid = uid
     req.channel = channel
-    tcp_connect.send(Interact.encode(header, req))
-    return handle_response(req)
+    return handle_response(header, req)
 
 
 def push_list(uid, channel=0):
@@ -135,24 +133,21 @@ def push_list(uid, channel=0):
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     req.uid = uid
     req.channel = channel
-    tcp_connect.send(Interact.encode(header, req))
-    return handle_response(req)
+    return handle_response(header, req)
 
 
 def query_user_info(server_id):
     req = gm_pb2.GMQueryAllUserBaseInfoOnlineReq()
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     req.server_id = server_id
-    tcp_connect.send(Interact.encode(header, req))
-    return handle_response(req)
+    return handle_response(header, req)
 
 
 def all_room(server_id):
     req = gm_pb2.GMGetAllServerRoomReq()
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     req.server_id = server_id
-    tcp_connect.send(Interact.encode(header, req))
-    return handle_response(req)
+    return handle_response(header, req)
 
 
 def room_info(server_id, room_id):
@@ -160,8 +155,7 @@ def room_info(server_id, room_id):
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     req.server_id = server_id
     req.room_id = room_id
-    tcp_connect.send(Interact.encode(header, req))
-    return handle_response(req)
+    return handle_response(header, req)
 
 
 def send_mail(mail_info):
@@ -200,22 +194,20 @@ def send_mail(mail_info):
         mail.mail_type = 1
     else:
         mail.mail_type = 0
-    logging.debug(req)
-    tcp_connect.send(Interact.encode(header, req))
-    return handle_response(req)
+    return handle_response(header, req)
 
 
 def unsend_mail():
     req = gm_pb2.GMQueryUnsendMailReq()
     header = Interact.make_header(req.DESCRIPTOR.full_name)
-    tcp_connect.send(Interact.encode(header, req))
+    return handle_response(header, req)
 
 
 def del_unsend_mail(mail_id):
     req = gm_pb2.GMDeleteUnsendMailReq()
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     req.mail_ids.append(mail_id)
-    tcp_connect.send(Interact.encode(header, req))
+    return handle_response(header, req)
 
 
 #########################
@@ -226,5 +218,14 @@ def handle_list_server(rsp):
             if item.server_type == 2:
                 servers.append(item.zone_id)
     OnlineServers.update(servers)
-    logging.debug(OnlineServers.servers)
+    logging.debug('handle_list_server update servers: {}'.format(OnlineServers.servers))
+
+
+def handle_online_server(rsp):
+    servers = []
+    if rsp:
+        for item in rsp.servers:
+            servers.append(item.server_id)
+    OnlineServers.update(servers)
+    logging.debug('handle_online_server update servers: {}'.format(OnlineServers.servers))
 

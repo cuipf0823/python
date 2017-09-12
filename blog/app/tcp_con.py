@@ -14,6 +14,9 @@ class TcpConnection(object):
     """
     tcp连接、接收和发送
     """
+    STATUS_SUCCESS = 0
+    STATUS_ERR = -1
+
     def __init__(self, ip, port):
         self.__ip = ip
         self.__port = port
@@ -66,22 +69,27 @@ class TcpConnection(object):
         data_len = len(data)
         ret = 0
         while True:
-            ret = self.__sock.send(data[ret:])
+            try:
+                ret = self.__sock.send(data[ret:])
+            except socket.error as err:
+                logging.error('socket send data faild error:'.format(err))
+                return self.STATUS_ERR
             if ret >= data_len:
                 break
-        return
+        return self.STATUS_SUCCESS
 
     def recv(self):
         """
         接收数据 保证接收的是完整包
-        :return 返回完整包数据
+        :return status_code, 返回完整包数据
         """
         all_data = ''.encode('utf-8')
         while True:
             try:
                 rec_data = self.__sock.recv(MAX_RECEIVE_BUF)
-            except BaseException:
-                print()
+            except socket.error as err:
+                logging.error('socket recv error: '.format(err))
+                return self.STATUS_ERR, err
             if len(rec_data) > 0:
                 all_data += rec_data
                 if len(all_data) > 4:
@@ -90,10 +98,7 @@ class TcpConnection(object):
                     continue
                 if len(all_data) >= msg_len[0]:
                     break
-            else:
-                # 服务端主动关闭
-                break
-        return all_data
+        return self.STATUS_SUCCESS, all_data
 
     def close(self):
         if self.__sock is not None:

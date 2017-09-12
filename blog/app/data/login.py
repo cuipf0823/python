@@ -15,7 +15,8 @@ def login_req(name, pwd, random_bytes):
     req.random_bytes = random_bytes
     md5 = hashlib.md5((name + pwd + random_bytes.decode()).encode('utf-8'))
     req.encrypt_bytes = md5.hexdigest().encode('utf-8')
-    tcp_connect.send(Interact.encode(header, req))
+    ret = tcp_connect.send(Interact.encode(header, req))
+    return ret
 
 
 def login_gm(name, pwd):
@@ -32,10 +33,13 @@ def login_gm(name, pwd):
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     header.gateway_session = 0
     req.name = name.encode('utf-8')
-    tcp_connect.send(Interact.encode(header, req))
-    data = tcp_connect.recv()
+    ret_code = tcp_connect.send(Interact.encode(header, req))
+    if ret_code != 0:
+        logging.error('send msg {} to gm server faild !'.format(req.DESCRIPTOR.full_name))
+        return StatusCode.status_and_desc(StatusCode.SOCK_SEND_ERROR)
+    ret_code, data = tcp_connect.recv()
     user_info = {'name': name, 'pwd': pwd}
-    if not data:
+    if ret_code != 0:
         logging.error('receive gm server response message faild !')
         return StatusCode.status_and_desc(StatusCode.SOCK_RECEIVE_ERROR)
     header, body = Interact.decode(data)
@@ -46,9 +50,12 @@ def login_gm(name, pwd):
     Interact.session = header.gateway_session
     user_info.setdefault('gateway_session', header.gateway_session)
     logging.debug('user {0} check session successfully random bytes {1}'.format(name, body.random_bytes))
-    login_req(name, pwd, body.random_bytes)
-    data = tcp_connect.recv()
-    if not data:
+    ret_code = login_req(name, pwd, body.random_bytes)
+    if ret_code != 0:
+        logging.error('send msg CSLoginReq to gm server faild !')
+        return StatusCode.status_and_desc(StatusCode.SOCK_SEND_ERROR)
+    ret_code, data = tcp_connect.recv()
+    if ret_code != 0:
         logging.error('receive gm server response message faild !')
         return StatusCode.status_and_desc(StatusCode.SOCK_RECEIVE_ERROR)
     header, rsp = Interact.decode(data)
