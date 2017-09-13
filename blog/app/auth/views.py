@@ -2,11 +2,11 @@
 # coding=utf-8
 from flask import render_template, url_for, flash
 from flask import request, redirect
-from flask_login import login_user, logout_user
+from flask_login import login_user, logout_user, current_user
 from . import auth
-from ..models import login_gm, User, UserManager
+from ..models import login_gm, UserManager
 from .forms import LoginForm
-from .. import tcp_connect
+import logging
 
 
 @auth.route('/login', methods=['GET', 'POST'])
@@ -15,9 +15,8 @@ def login():
     if form.validate_on_submit():
         status_code, ret = login_gm(form.username.data, form.password.data)
         if status_code is 0:
-            UserManager.append(User(ret))
-            login_user(User(ret))
-            # ret = init_server()
+            UserManager.append(ret)
+            login_user(ret)
             return redirect(request.args.get('next') or url_for('main.index'))
         flash('login gm server failed {0}:{1}'.format(status_code, ret), 'error')
     return render_template('auth/login.html', form=form)
@@ -25,9 +24,11 @@ def login():
 
 @auth.route('/logout')
 def logout():
+    logging.info('user {0} logout close connect gm socket_id: {1}'.format(current_user.id,
+                                                                          current_user.connect_gm.sock_id))
+    current_user.connect_gm.close()
+    UserManager.remove(current_user.id)
     logout_user()
-    # 关闭tcp连接
-    tcp_connect.close()
     flash('You have been logged out!')
     return redirect(url_for('auth.login'))
 

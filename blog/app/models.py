@@ -3,8 +3,10 @@
 from datetime import datetime
 from flask import request
 from flask_login import UserMixin
-from .data import login
+from .data import login, query
 from . import login_manager
+from . import gm_server_ip, gm_server_port
+from .tcp_con import TcpConnection
 import hashlib
 import logging
 import time
@@ -17,6 +19,7 @@ class User(UserMixin):
         self.__password = dicts.get('pwd')
         self.__gateway_session = dicts.get('gateway_session')
         self.__login_time = datetime.strptime(str(datetime.utcnow()), '%Y-%m-%d %H:%M:%S.%f')
+        self.__connect_gm = None
 
     def gravatar(self, size=100, default='identicon', rating='g'):
         if request.is_secure:
@@ -56,6 +59,14 @@ class User(UserMixin):
         return self.__login_time
 
     @property
+    def connect_gm(self):
+        return self.__connect_gm
+
+    @connect_gm.setter
+    def connect_gm(self, value):
+        self.__connect_gm = value
+
+    @property
     def is_authenticated(self):
         return True
 
@@ -89,26 +100,13 @@ class UserManager:
         return cls.users.setdefault(user.id, user)
 
     @classmethod
+    def remove(cls, user_id):
+        del cls.users[user_id]
+
+    @classmethod
     def print_users(cls):
         for key, value in cls.users.items():
             logging.debug(value)
-
-
-def login_gm(name, pwd):
-    """
-     login success return statu_code = 0 and User
-     login faild return statu_code = error_code and error describe
-    """
-    return login.login_gm(name, pwd)
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    """
-    回调函数，根据用户ID查找用户
-    """
-    logging.debug('user {} login successful'.format(user_id))
-    return UserManager.get_user_by_id(int(user_id))
 
 
 class OnlineServers:
@@ -123,6 +121,54 @@ class OnlineServers:
     def update(cls, servers):
         cls.servers = servers
         cls.last_time = time.time()
+
+
+def login_gm(name, pwd):
+    """
+     login success return statu_code = 0 and User
+     login faild return statu_code = error_code and error describe
+    """
+    tcp_connect = TcpConnection(gm_server_ip, gm_server_port)
+    if not tcp_connect.connect():
+        return 10000, 'Connect gm server failed'
+    status_code, ret = login.login_gm(tcp_connect, name, pwd)
+    logging.info('user:{0} pwd: {1} login status_code: {2}, user_info: {3}'.format(name, pwd, status_code, ret))
+    if status_code == 0:
+        user = User(ret)
+        user.connect_gm = tcp_connect
+        return status_code, user
+    return status_code, ret
+
+
+def query_operators():
+    return query.Operations.operations()
+
+
+def query_callback(opt, user, **kwargs):
+    return query.Operations.callback(opt, user, **kwargs)
+
+
+def query_response_cb(opt, rsp):
+    if opt == query.Operations.OPT_LIST_SERVER:
+        OnlineServers.update(query.handle_list_server(rsp))
+    elif opt == query.Operations.OPT_ONLINES_SERVER:
+        OnlineServers.update(query.handle_online_server(rsp))
+
+
+def callback_type():
+    return query.CallBackType
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    """
+    回调函数，根据用户ID查找用户
+    """
+    logging.debug('user {} login successful'.format(user_id))
+    return UserManager.get_user_by_id(int(user_id))
+
+
+
 
 
 

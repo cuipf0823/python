@@ -5,11 +5,10 @@ import hashlib
 import logging
 from ..proto import error_code_pb2 as pb_error
 from ..proto import gm_pb2
-from .. import tcp_connect
 from .common import *
 
 
-def login_req(name, pwd, random_bytes):
+def login_req(tcp_connect, name, pwd, random_bytes):
     req = gm_pb2.GMLoginReq()
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     req.random_bytes = random_bytes
@@ -19,16 +18,13 @@ def login_req(name, pwd, random_bytes):
     return ret
 
 
-def login_gm(name, pwd):
+def login_gm(tcp_connect, name, pwd):
     statu_code = 0
     '''
     # fake code
     if statu_code is 0:
         return statu_code, {'name': name, 'pwd': pwd, 'gateway_session': 123456789, 'id': 1}
     '''
-    # 连接gm 服务器
-    if not tcp_connect.connect():
-        return StatusCode.status_and_desc(StatusCode.CONNECT_GM_FAILED)
     req = gm_pb2.GMCheckSessionReq()
     header = Interact.make_header(req.DESCRIPTOR.full_name)
     header.gateway_session = 0
@@ -50,7 +46,7 @@ def login_gm(name, pwd):
     Interact.session = header.gateway_session
     user_info.setdefault('gateway_session', header.gateway_session)
     logging.debug('user {0} check session successfully random bytes {1}'.format(name, body.random_bytes))
-    ret_code = login_req(name, pwd, body.random_bytes)
+    ret_code = login_req(tcp_connect, name, pwd, body.random_bytes)
     if ret_code != 0:
         logging.error('send msg CSLoginReq to gm server faild !')
         return StatusCode.status_and_desc(StatusCode.SOCK_SEND_ERROR)

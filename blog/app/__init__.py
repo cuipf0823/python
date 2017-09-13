@@ -9,7 +9,6 @@ from config import config
 from flask_wtf import CSRFProtect
 import sys
 import logging
-from .tcp_con import TcpConnection
 
 bootstrap = Bootstrap()
 moment = Moment()
@@ -19,8 +18,8 @@ csrf = CSRFProtect()
 login_manager.session_protection = 'strong'
 # 设置登录页面的端点
 login_manager.login_view = 'auth.login'
-
-tcp_connect = None
+gm_server_ip = None
+gm_server_port = 0
 
 
 def create_app(config_name):
@@ -35,8 +34,11 @@ def create_app(config_name):
     csrf.init_app(app)
     logging.basicConfig(level=logging.DEBUG, stream=sys.stdout,
                         format='%(asctime)s %(levelname)-8s %(message)s --%(filename)s:%(lineno)-4d')
-    global tcp_connect
-    tcp_connect = TcpConnection(config[config_name].GM_SERVER_IP, config[config_name].GM_SERVER_PORT)
+
+    global gm_server_ip
+    gm_server_ip = config[config_name].GM_SERVER_IP
+    global gm_server_port
+    gm_server_port = config[config_name].GM_SERVER_PORT
 
     # 注册蓝图
     from .main import main as main_blueprint
