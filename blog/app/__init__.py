@@ -32,8 +32,12 @@ def create_app(config_name):
     moment.init_app(app)
     login_manager.init_app(app)
     csrf.init_app(app)
-    logging.basicConfig(level=logging.DEBUG, stream=sys.stdout,
-                        format='%(asctime)s %(levelname)-8s %(message)s --%(filename)s:%(lineno)-4d')
+    if config[config_name].GM_LOG_MODE == 1:
+        logging.basicConfig(level=logging.DEBUG, stream=sys.stdout,
+                            format='%(asctime)s %(levelname)-8s %(message)s --%(filename)s:%(lineno)-4d')
+    else:
+        logging.basicConfig(level=logging.DEBUG, filename='gm_tool.log',
+                            format='%(asctime)s %(levelname)-8s %(message)s --%(filename)s:%(lineno)-4d')
 
     global gm_server_ip
     gm_server_ip = config[config_name].GM_SERVER_IP

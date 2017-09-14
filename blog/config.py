@@ -8,6 +8,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY')
+    GM_LOG_MODE = int(os.environ.get('GM_LOG_MODE'))
 
     def __init__(self):
         pass
@@ -21,6 +22,7 @@ class DevelopmentConfig(Config):
     DEBUG = True
     GM_SERVER_IP = os.environ.get('GM_SERVER_DEV_IP')
     GM_SERVER_PORT = int(os.environ.get('GM_SERVER_DEV_PORT'))
+
 
 
 class TestConfig(Config):
