@@ -47,6 +47,10 @@ class User(UserMixin):
         self.__username = value
 
     @property
+    def password(self):
+        return self.__password
+
+    @property
     def gateway_session(self):
         return self.__gateway_session
 
@@ -108,6 +112,13 @@ class UserManager:
         for key, value in cls.users.items():
             logging.debug(value)
 
+    @classmethod
+    def get_user_by_name(cls, name):
+        for _, value in cls.users.items():
+            if value.username == name:
+                return value
+        return None
+
 
 class OnlineServers:
     servers = []
@@ -121,6 +132,13 @@ class OnlineServers:
     def update(cls, servers):
         cls.servers = servers
         cls.last_time = time.time()
+
+
+def is_already_login(name, pwd):
+    user = UserManager.get_user_by_name(name)
+    if user is not None and user.password == pwd and user.connect_gm.is_connect:
+        return True
+    return False
 
 
 def login_gm(name, pwd):

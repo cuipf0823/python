@@ -4,7 +4,7 @@ from flask import render_template, url_for, flash
 from flask import request, redirect
 from flask_login import login_user, logout_user, current_user
 from . import auth
-from ..models import login_gm, UserManager
+from ..models import login_gm, UserManager, is_already_login
 from .forms import LoginForm
 import logging
 
@@ -13,12 +13,18 @@ import logging
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        status_code, ret = login_gm(form.username.data, form.password.data)
-        if status_code is 0:
-            UserManager.append(ret)
-            login_user(ret)
+        if is_already_login(form.username.data, form.password.data):
+            login_user(UserManager.get_user_by_name(form.username.data))
+            logging.debug('the connection of user {} to gm server already exits'.format(form.username.data))
             return redirect(request.args.get('next') or url_for('main.index'))
-        flash('login gm server failed {0}:{1}'.format(status_code, ret), 'error')
+        else:
+            status_code, ret = login_gm(form.username.data, form.password.data)
+            if status_code is 0:
+                UserManager.append(ret)
+                login_user(ret)
+                return redirect(request.args.get('next') or url_for('main.index'))
+            else:
+                flash('login gm server failed {0}:{1}'.format(status_code, ret), 'error')
     return render_template('auth/login.html', form=form)
 
 
