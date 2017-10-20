@@ -163,7 +163,7 @@ def send_mail(mail_info):
         for uid in mail_info.get('receive_uids', []):
             mail.uids.append(uid)
             mail.channels.append(0)
-            mail.online_ids.append(mail_info.online_id)
+            mail.online_ids.append(mail_info.get("receive_online", 0))
     mail.sender = mail_info.get('sender').encode('utf-8')
     mail.title = mail_info.get('title').encode('utf-8')
     mail.content = mail_info.get('content').encode('utf-8')
