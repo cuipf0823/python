@@ -169,8 +169,8 @@ def send_mail(mail_info):
     mail.content = mail_info.get('content').encode('utf-8')
     mail.valid_time = mail_info.get('valid_time')
     mail.is_destroy = mail_info.get('is_destory')
-    mail.show_priority = (gm_pb2.MailContent.Normal if mail_info.get('priority')
-                          else gm_pb2.MailContent.Top)
+    mail.show_priority = (gm_pb2.MailContent.Top if mail_info.get('priority')
+                          else gm_pb2.MailContent.Normal)
     mail.is_popping = mail_info.get('is_popping')
     mail.delayed_time = mail_info.get('delayed_time')
     for item in mail_info.get('attachments', []):
@@ -306,5 +306,3 @@ class Operations:
         if cb is None:
             return None
         return cb(rsp)
-
-
