@@ -3,7 +3,6 @@
 
 import redis
 import time
-import threading
 import random
 from datetime import datetime
 
@@ -307,11 +306,6 @@ def convert(data):
     if isinstance(data, tuple):
         return map(convert, data)
     return data
-
-
-def con(b):
-    if b:
-        return "yes"
 
 
 if __name__ == '__main__':
