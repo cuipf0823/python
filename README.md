@@ -7,3 +7,9 @@ fib是斐波那契数列的递归算法, 如果不使用装饰器, 效率非常�
 
 ## AppRouter
 演示了通过URL的路由来调用相关注册函数;
+
+
+# redis/location.py
+## 利用redis实现自动补全功能
+* 少量数据, 可以使用redis保存, 由python自身实现补全; 效率低;
+* 利用redis实现自动补全

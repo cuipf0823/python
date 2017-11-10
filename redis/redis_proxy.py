@@ -144,9 +144,12 @@ def hello():
 
 
 if __name__ == '__main__':
-    # location.import_ip_to_redis("D:\\other\\ipcheck\\GeoLite2-City-CSV_20171107\\GeoLite2-City-CSV_20171107\\GeoLite2-City-Locations-zh-CN.csv")
-    # location.import_ip_to_redis("D:\\other\ipcheck\\GeoLite2-Country-CSV_20171107\\GeoLite2-Country-CSV_20171107\\GeoLite2-Country-Locations-zh-CN.csv")
     print(hello())
     print(make_html_tag.__name__)
     print(hello.__name__)
+
+    for idx in range(0, 50):
+        location.update_contact(rd, 'evan', '{}evan'.format(idx))
+
+    print(location.autocomplete_contact(rd, 'evan', '2'))
     pass
