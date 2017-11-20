@@ -63,11 +63,15 @@ def autocomplete_contact(conn, user, prefix):
     return matches
 
 
-# 2. 使用redis来实现自动补全, 自动补全列表使用redis中有序集合保存;
+# 2. 使用redis来实现自动补全(仅限字母), 自动补全列表使用redis中有序集合保存;
+# 通过给定的前缀的最后一个字符, 可以得到前缀的前驱; 通过给前缀的末尾拼接上左花括号, 可以得到前缀的后继
 valid_characters = '`abcdefghijklmnopqrstuvwsyz{'
 
 
 def find_prefix_range(prefix):
+    """
+    根据输入前缀查询其前驱和后继
+    """
     posn = bisect.bisect_left(valid_characters, prefix[-1:])
     suffix = valid_characters[posn or 1 - 1]
     return prefix[:-1] + suffix + '{', prefix + '{'
